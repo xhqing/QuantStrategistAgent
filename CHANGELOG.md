@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### 变更（assets/logo.svg 副标题去中文）
+
+- **为什么改**：全局规则新增「Logo / 图标资产文字一律用英文」（2026-09-12 用户立，起因 Swing 仓库 logo 副标题混入中文被指出）：logo 是面向全球读者的视觉标识，中文受众已有 README_cn.md 双语通道；且 SVG 中文依赖查看环境的字体回退，渲染不可控。本次为按新规批量清理存量。
+- **改了什么**：`assets/logo.svg` 副标题「Quant Strategist · 量化策略师」→「Quant Strategist」。
+
 ## 0.1.0（2026-09-12）
 
 ### 新增
