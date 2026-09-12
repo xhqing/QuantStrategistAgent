@@ -61,3 +61,9 @@ Markowitz is a member of the [xhqing AI agent team](https://github.com/xhqing) â
 ## Disclaimer
 
 Strategy research for educational purposes. Nothing here is investment advice; backtests do not guarantee live or future performance.
+
+## License & Attribution
+
+- **Copyright** (c) 2026 All Contributors. Licensed under the [MIT License](LICENSE.md).
+- **Attribution**: If you reference or build upon this work, please keep the copyright notice and credit the source repository.
+- **Citation**: <https://github.com/xhqing/QuantStrategistAgent>

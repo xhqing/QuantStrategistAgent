@@ -61,3 +61,9 @@ Markowitz 是 [xhqing AI agent 团队](https://github.com/xhqing)的成员——
 ## 免责声明
 
 策略研究仅供学习。全部内容不构成投资建议；回测结果不代表实盘与未来表现。
+
+## 版权与署名
+
+- **版权**：Copyright (c) 2026 All Contributors，基于 [MIT 许可证](LICENSE.md)发布。
+- **署名方式**：引用或基于本项目二次开发时，请保留版权声明并注明来源仓库。
+- **项目地址引用**：<https://github.com/xhqing/QuantStrategistAgent>
