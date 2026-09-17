@@ -68,8 +68,10 @@ Markowitz 的核心产物是**量化策略代码 + 回测标定的可信度查�
 
 ## 子项目清单（`.claude/` 超集关系）
 
-本项目（Markowitz）负责维护以下子项目，`.claude/` 与子项目 `.claude/` 之间维护「Agent 项目为权威源、子项目为超集」的关系（全局规则「Agent 项目与子项目的 `.claude/` 超集关系」，2026-08-10 立）：本文件全文随附进子项目 `.claude/CLAUDE.md`，其中「本项目」均指 QuantStrategistAgent。
+本项目（Markowitz）负责维护以下子项目，`.claude/` 与子项目 `.claude/` 之间维护「Agent 项目为权威源、子项目为超集」的关系（全局规则「Agent 项目与子项目的 `.claude/` 超集关系」，2026-08-10 立）：本文件全文随附进各子项目的 CLAUDE.md，其中「本项目」均指 QuantStrategistAgent。
 
+- **QuantStrategistAgent（Markowitz）→ Intraday**：日内尺度策略研究（订单流 mbo 特征、分钟级 ML 信号、walk-forward 验证、执行口径模拟）；其 `.claude/skills/quant/` 为本项目权威源的逐字节一致副本，另保留 `data_cache/` K 线缓存等运行时数据（gitignore）、供研究代码直接复用。
+- **QuantStrategistAgent（Markowitz）→ Swing**：独立仓库 [xhqing/Swing](https://github.com/xhqing/Swing)，日 K 趋势跟随策略工具集（美股大盘股，Python，完整文档 + 回测验证 + 可信度标定）。
 - **QuantStrategistAgent（Markowitz）→ gridtrader**：独立仓库 [xhqing/gridtrader](https://github.com/xhqing/gridtrader)，网格交易策略开发及回测工具（Python / backtrader，Pipenv 管理依赖，`get_data_scripts/` 拉数据、`data/` 放样例数据）。
 
 ## commit skill 检测缓存

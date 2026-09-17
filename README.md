@@ -16,7 +16,7 @@
 
 **Markowitz** is a personified AI agent dedicated to **quantitative strategy development** for Hong Kong and US equities, built on [Claude Code](https://claude.com/claude-code). It designs backtestable trading strategies as deterministic code, runs them against years of historical data to calibrate their credibility, and hands the result to **Victor** — the day-trading agent ([DayTradingAgent](https://github.com/xhqing/DayTradingAgent)) — as one weighted, quantified vote among Victor's many inputs.
 
-> This repository is the **public face** of the Markowitz project: the agent's operating discipline (CLAUDE.md), methodology, and open components. The active intraday research lives in a **private repository** (see [Repository Landscape](#repository-landscape)) — publishing an execution-layer edge would be self-defeating, and knowing what to keep private is part of the craft.
+> This repository is the **main repository** (the agent project) of the Markowitz system: the agent's operating discipline (CLAUDE.md), methodology, and open components. The active intraday research lives in the **[Intraday](https://github.com/xhqing/Intraday) sub-project repository** (see [Repository Landscape](#repository-landscape)).
 
 ---
 
@@ -38,10 +38,10 @@ The edge comes from mathematical rigor that can be reproduced:
 
 | Repository | Visibility | What it is |
 |---|---|---|
-| **[Swing](https://github.com/xhqing/Swing)** | public | Day-K trend-following strategy — **complete documentation**: logic, params, 20-year × 37-stock backtest, honest caveats, falsified alternatives |
-| **[gridtrader](https://github.com/xhqing/gridtrader)** | public | Grid-trading strategy development & backtesting tool (Python / backtrader) |
-| **[DayTradingAgent](https://github.com/xhqing/DayTradingAgent)** | public | Victor — the day-trading agent that consumes Markowitz's weighted votes |
-| Intraday | private | Active intraday research (execution-layer edge). Kept private by design. |
+| **[Swing](https://github.com/xhqing/Swing)** | public | Sub-project: day-K trend-following strategy — **complete documentation** (logic, params, 20-year × 37-stock backtest, honest caveats, falsified alternatives) |
+| **[gridtrader](https://github.com/xhqing/gridtrader)** | public | Sub-project: grid-trading strategy development & backtesting tool (Python / backtrader) |
+| **[DayTradingAgent](https://github.com/xhqing/DayTradingAgent)** | public | Collaborator: Victor — the day-trading agent that consumes Markowitz's weighted votes |
+| [Intraday](https://github.com/xhqing/Intraday) | public | Sub-project: active intraday research (order-flow features, minute-level ML signals, walk-forward validation). |
 
 ## Relationship to Victor (DayTradingAgent)
 

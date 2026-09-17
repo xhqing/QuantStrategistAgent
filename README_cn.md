@@ -16,7 +16,7 @@
 
 **Markowitz** 是专职**量化策略开发**的拟人化 AI agent（港股 / 美股），基于 [Claude Code](https://claude.com/claude-code) 构建。它把交易思路写成可回测的确定性代码，用多年历史数据回测标定可信度，产出交给日内交易员 **Victor**（[DayTradingAgent](https://github.com/xhqing/DayTradingAgent)），作为 Victor 综合判断中**一个经过历史验证的加权投票员**。
 
-> 本仓库是 Markowitz 项目的**公开门面**：agent 运行纪律（CLAUDE.md）、方法学与公开组件。进行中的日内策略研究放在**私有仓库**（见下方[仓库版图](#仓库版图)）——执行层的 edge 公开等于自毁，**知道什么该保密，本身也是专业能力的一部分**。
+> 本仓库是 Markowitz 项目的**主仓库**（agent 项目）：agent 运行纪律（CLAUDE.md）、方法学与公开组件。进行中的日内策略研究放在子项目 [Intraday](https://github.com/xhqing/Intraday) 仓库（见下方[仓库版图](#仓库版图)）。
 
 ---
 
@@ -38,10 +38,10 @@ edge 来自可复现的数学严谨：
 
 | 仓库 | 可见性 | 是什么 |
 |---|---|---|
-| **[Swing](https://github.com/xhqing/Swing)** | 公开 | 日 K 趋势跟随策略——**文档完整**：逻辑、参数、20 年 × 37 只回测、诚实标注局限、已证伪方案清单 |
-| **[gridtrader](https://github.com/xhqing/gridtrader)** | 公开 | 网格交易策略开发与回测工具（Python / backtrader） |
-| **[DayTradingAgent](https://github.com/xhqing/DayTradingAgent)** | 公开 | Victor——消费 Markowitz 加权投票的日内交易 agent |
-| Intraday | 私有 | 进行中的日内策略研究（执行层 edge）。刻意保持私有。 |
+| **[Swing](https://github.com/xhqing/Swing)** | 公开 | 子项目：日 K 趋势跟随策略，**文档完整**（逻辑、参数、20 年 × 37 只回测、诚实标注局限、已证伪方案清单） |
+| **[gridtrader](https://github.com/xhqing/gridtrader)** | 公开 | 子项目：网格交易策略开发与回测工具（Python / backtrader） |
+| **[DayTradingAgent](https://github.com/xhqing/DayTradingAgent)** | 公开 | 协作方：Victor——消费 Markowitz 加权投票的日内交易 agent |
+| [Intraday](https://github.com/xhqing/Intraday) | 公开 | 子项目：进行中的日内策略研究（订单流、分钟级 ML 信号、walk-forward 验证）。 |
 
 ## 与 Victor（DayTradingAgent）的关系
 
