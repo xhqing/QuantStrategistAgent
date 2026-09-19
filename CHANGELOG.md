@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### 新增（`.pi/skills/` 软链接指向 `.claude/skills/`）
+
+- **为什么改**（2026-09-19）：pi coding agent 的项目级 skill 查找路径在 `.pi/` 下，与 Claude Code 的 `.claude/skills/` 不同；用软链接把两边打通，避免维护两份副本、也避免分叉（`.claude/skills/` 仍是唯一权威源）。
+- **改了什么**（2026-09-19）：新建 `.pi/` 目录，其下创建软链接 `skills -> ../.claude/skills`（相对路径，仓库整体移动后依然有效）。无文件复制，`quant` skill 真身仍在 `.claude/skills/quant/`。
+
 ### 变更（体系叙事修正：删去「交付 Victor 当加权投票员」叙事，确立独立开发定位）
 
 - **为什么改**（2026-09-19 用户多次纠正后正式落地）：用户明确裁定——Markowitz 的量化策略是**独立开发**，与 DayTradingAgent 无关系；但 CLAUDE.md / README / workflow 图中长期写着「产出交给日内交易员 Victor 当加权投票员」，这套交付叙事与事实不符，且反复误导 AI 会话往 DTAgent 关联方向发挥。
