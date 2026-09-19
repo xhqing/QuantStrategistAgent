@@ -14,7 +14,7 @@
 
 <p align="center">🌐 <a href="README.md">English</a></p>
 
-**Markowitz** 是专职**量化策略开发**的拟人化 AI agent（港股 / 美股），基于 [Claude Code](https://claude.com/claude-code) 构建。它把交易思路写成可回测的确定性代码，用多年历史数据回测标定可信度，产出交给日内交易员 **Victor**（[DayTradingAgent](https://github.com/xhqing/DayTradingAgent)），作为 Victor 综合判断中**一个经过历史验证的加权投票员**。
+**Markowitz** 是专职**量化策略开发**的拟人化 AI agent（港股 / 美股），基于 [Claude Code](https://claude.com/claude-code) 构建。它把交易思路写成可回测的确定性代码，用多年历史数据回测标定可信度。量化策略**独立开发**，与任何交易执行项目无依赖、无交付关系。
 
 > 本仓库是 Markowitz 项目的**主仓库**（agent 项目）：agent 运行纪律（CLAUDE.md）、方法学与公开组件。进行中的日内策略研究放在子项目 [Intraday](https://github.com/xhqing/Intraday) 仓库（见下方[仓库版图](#仓库版图)）。
 
@@ -31,7 +31,7 @@ edge 来自可复现的数学严谨：
 - **walk-forward 跨年验证**：样本内说明不了什么；样本外零衰减才是及格线。
 
 <p align="center">
-  <img src="assets/markowitz_workflow.svg" width="100%" alt="Markowitz 工作流：策略设计 → 回测 → 可信度查表 → 加权投票给 Victor" />
+  <img src="assets/markowitz_workflow.svg" width="100%" alt="Markowitz 工作流：策略设计 → 回测 → 可信度查表 → 策略库沉淀" />
 </p>
 
 ## 仓库版图
@@ -40,19 +40,7 @@ edge 来自可复现的数学严谨：
 |---|---|---|
 | **[Swing](https://github.com/xhqing/Swing)** | 公开 | 子项目：日 K 趋势跟随策略，**文档完整**（逻辑、参数、20 年 × 37 只回测、诚实标注局限、已证伪方案清单） |
 | **[gridtrader](https://github.com/xhqing/gridtrader)** | 公开 | 子项目：网格交易策略开发与回测工具（Python / backtrader） |
-| **[DayTradingAgent](https://github.com/xhqing/DayTradingAgent)** | 公开 | 协作方：Victor——消费 Markowitz 加权投票的日内交易 agent |
 | [Intraday](https://github.com/xhqing/Intraday) | 公开 | 子项目：进行中的日内策略研究（订单流、分钟级 ML 信号、walk-forward 验证）。 |
-
-## 与 Victor（DayTradingAgent）的关系
-
-| | Markowitz（本仓库） | Victor（[DayTradingAgent](https://github.com/xhqing/DayTradingAgent)） |
-|---|---|---|
-| **职责** | 设计并回测量化策略 | 盯盘并发出交易信号 |
-| **模式** | 离线、确定性代码 | 实时、LLM 判断 |
-| **输出** | 策略代码 + 可信度查表 | 🟢/🔴/🟡/🟠 信号（人工执行） |
-| **碰账户？** | 从不 | 从不（信号模式） |
-
-Markowitz 的产物是 Victor 的**一个加权输入**——一个「历史验证过的可量化投票员」。资金流、盘口、新闻、宏观等主观判断因素仍归 Victor。
 
 ## xhqing Agent 团队成员
 

@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### 变更（体系叙事修正：删去「交付 Victor 当加权投票员」叙事，确立独立开发定位）
+
+- **为什么改**（2026-09-19 用户多次纠正后正式落地）：用户明确裁定——Markowitz 的量化策略是**独立开发**，与 DayTradingAgent 无关系；但 CLAUDE.md / README / workflow 图中长期写着「产出交给日内交易员 Victor 当加权投票员」，这套交付叙事与事实不符，且反复误导 AI 会话往 DTAgent 关联方向发挥。
+- **改了什么**（2026-09-19）：① `CLAUDE.md`——定位句改为「量化策略独立开发，与 DayTradingAgent 等任何交易执行项目无依赖、无交付关系」；四步工作流第 4 步「交付加权投票员」改为「沉淀策略库」；「角色关系」块改为「独立边界」；其余 Victor 指代（留给 Victor 主观判断 / 由 Victor 侧触发 / 不干扰 Victor）改为中性表述；② `README.md` / `README_cn.md`——介绍段改独立开发口径，仓库版图删 DayTradingAgent 行，删「与 Victor 的关系」整节，workflow 图 alt 同步；③ `assets/markowitz_workflow.svg`——STEP 4「Deliver（One weighted vote for Victor）」改为「Library（策略库沉淀）」，底部 Victor 交付条改为「Independent by Design」独立边界条；④ 三个子项目 CLAUDE.md 嵌文同步刷新。保留项：schema.md / backtest.py 中 `g` 公式推导文档出处链接（指向 DayTradingAgent 仓库 notes）仅是参考文献引用、非交付关系，未动。
+
 ### 变更（quant skill 权威源回迁：本项目新建 `.claude/skills/quant/`；Intraday 可见性改公开口径）
 
 - **为什么改**（2026-09-16 用户裁定）：① 超集规则要求 Agent 项目的 `.claude/` 为权威源，但本项目此前无 `.claude/` 目录，quant skill 真身悬在子项目 Intraday（权威源悬空）；② 实测 GitHub 上 Intraday 仓库为 PUBLIC，用户裁定文档统一改公开口径（不再保留「刻意保持私有」叙述）。
