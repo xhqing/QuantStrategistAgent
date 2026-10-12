@@ -66,13 +66,15 @@ Markowitz 的核心产物是**量化策略代码 + 回测标定的可信度查�
 
 > 事实性 / 数值性结论先验证再陈述（实体归属、算术、日历、API 字段、费率），禁止把推测当事实——这条是量化工作的底线：策略代码里的每一个数值都必须有据可查、可复现。
 
-## 子项目清单（`.claude/` 超集关系）
+## 子项目清单（智能体专属文件归属，2026-10-12 修订）
 
-本项目（Markowitz）负责维护以下子项目，`.claude/` 与子项目 `.claude/` 之间维护「Agent 项目为权威源、子项目为超集」的关系（全局规则「Agent 项目与子项目的 `.claude/` 超集关系」，2026-08-10 立）：本文件全文随附进各子项目的 CLAUDE.md，其中「本项目」均指 QuantStrategistAgent。
+本项目（Markowitz）负责维护以下子项目（与全局 `~/.claude/docs/agents-registry.md`「子项目映射」表保持一致）：
 
-- **QuantStrategistAgent（Markowitz）→ Intraday**：日内尺度策略研究（订单流 mbo 特征、分钟级 ML 信号、walk-forward 验证、执行口径模拟）；其 `.claude/skills/quant/` 为本项目权威源的逐字节一致副本，另保留 `data_cache/` K 线缓存等运行时数据（gitignore）、供研究代码直接复用。
+- **QuantStrategistAgent（Markowitz）→ Intraday**：日内尺度策略研究（订单流 mbo 特征、分钟级 ML 信号、walk-forward 验证、执行口径模拟）。
 - **QuantStrategistAgent（Markowitz）→ Swing**：独立仓库 [xhqing/Swing](https://github.com/xhqing/Swing)，日 K 趋势跟随策略工具集（美股大盘股，Python，完整文档 + 回测验证 + 可信度标定）。
 - **QuantStrategistAgent（Markowitz）→ gridtrader**：独立仓库 [xhqing/gridtrader](https://github.com/xhqing/gridtrader)，网格交易策略开发及回测工具（Python / backtrader，Pipenv 管理依赖，`get_data_scripts/` 拉数据、`data/` 放样例数据）。
+
+按 2026-10-12 全局规则「智能体专属文件归属与子项目映射」（细则见 `~/.claude/docs/agents-registry.md` 同名节，取代原「子项目 `.claude/` 超集」规则）：`CLAUDE.md`、`AGENTS.md`、`.claude/`、项目级 `.pi/` 等「会话启动时按工作目录加载、表征智能体身份」的项目级文件**只有本项目（Agent 项目）允许拥有，子项目一律不得存在**（三个子项目内原有的此类文件已按新规清理删除；quant skill 权威源只在本项目 `.claude/skills/quant/`，不再向子项目分发副本）；**通过 intercom / agent_call / agent_wake 为 Markowitz 在后台开启 pi 会话，只能以本项目根目录为工作目录**——子项目的工作在本项目会话里按路径操作（如 `git -C <子项目目录>`）。
 
 ## commit skill 检测缓存
 
