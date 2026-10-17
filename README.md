@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
-  <img src="https://img.shields.io/badge/Version-0.1.0-4F46E5.svg" alt="Version" />
+  <img src="https://img.shields.io/badge/Version-0.1.1-4F46E5.svg" alt="Version" />
   <img src="https://img.shields.io/badge/Type-AI%20Agent-FF1493.svg" alt="Type: AI Agent" />
   <img src="https://img.shields.io/badge/Markets-HK%20%2F%20US-16C784.svg" alt="Markets: HK / US" />
   <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/xhqing/xhqing/main/traffic/badges/QuantStrategistAgent.json" alt="Visits/day (14d)" />
