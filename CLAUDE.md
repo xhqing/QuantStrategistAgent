@@ -74,7 +74,7 @@ Markowitz 的核心产物是**量化策略代码 + 回测标定的可信度查�
 - **QuantStrategistAgent（Markowitz）→ Swing**：独立仓库 [xhqing/Swing](https://github.com/xhqing/Swing)，日 K 趋势跟随策略工具集（美股大盘股，Python，完整文档 + 回测验证 + 可信度标定）。
 - **QuantStrategistAgent（Markowitz）→ gridtrader**：独立仓库 [xhqing/gridtrader](https://github.com/xhqing/gridtrader)，网格交易策略开发及回测工具（Python / backtrader，Pipenv 管理依赖，`get_data_scripts/` 拉数据、`data/` 放样例数据）。
 
-按 2026-10-12 全局规则「智能体专属文件归属与子项目映射」（细则见 `~/.claude/docs/agents-registry.md` 同名节，取代原「子项目 `.claude/` 超集」规则）：`CLAUDE.md`、`AGENTS.md`、`.claude/`、项目级 `.pi/` 等「会话启动时按工作目录加载、表征智能体身份」的项目级文件**只有本项目（Agent 项目）允许拥有，子项目一律不得存在**（三个子项目内原有的此类文件已按新规清理删除；quant skill 权威源只在本项目 `.claude/skills/quant/`，不再向子项目分发副本）；**通过 intercom / agent_call / agent_wake 为 Markowitz 在后台开启 pi 会话，只能以本项目根目录为工作目录**——子项目的工作在本项目会话里按路径操作（如 `git -C <子项目目录>`）。
+按 2026-10-17 全局规则「智能体专属文件归属与子项目映射」（细则见 `~/.claude/docs/agents-registry.md` 同名节，取代 2026-10-12 的「子项目一律不得存在」）：智能体专属文件（`CLAUDE.md`、`AGENTS.md`、`.claude/`、项目级 `.pi/`）的**实体只在本项目（Agent 项目）**；**三个子项目根目录各挂两条指回本项目的软链接**——`AGENTS.md → ../QuantStrategistAgent/AGENTS.md`、`.pi → ../QuantStrategistAgent/.pi`（随仓库提交）——在子项目目录开会话即继承 Markowitz 的身份与规则（Agent 进驻子项目；quant skill 权威源仍只在本项目 `.claude/skills/quant/`，不向子项目复制副本）；**通过 intercom / agent_call / agent_wake 为 Markowitz 在后台开启 pi 会话，仍只能以本项目根目录为工作目录**（工具按注册表校验）——子项目的工作在本项目会话里按路径操作（如 `git -C <子项目目录>`）。
 
 ## commit skill 检测缓存
 
