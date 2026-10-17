@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/logo.svg" width="320" alt="Markowitz logo" />
+  <img src="assets/logo.svg" width="320" alt="Mark logo" />
 </p>
 
-<h1 align="center">Markowitz — 量化策略 Agent（港股 / 美股）</h1>
+<h1 align="center">Mark — 量化策略 Agent（港股 / 美股）</h1>
 
 <p align="center">
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
@@ -14,9 +14,9 @@
 
 <p align="center">🌐 <a href="README.md">English</a></p>
 
-**Markowitz** 是专职**量化策略开发**的拟人化 AI agent（港股 / 美股），基于 [Claude Code](https://claude.com/claude-code) 构建。它把交易思路写成可回测的确定性代码，用多年历史数据回测标定可信度。量化策略**独立开发**，与任何交易执行项目无依赖、无交付关系。
+**Mark** 是专职**量化策略开发**的拟人化 AI agent（港股 / 美股），基于 [Claude Code](https://claude.com/claude-code) 构建。它把交易思路写成可回测的确定性代码，用多年历史数据回测标定可信度。量化策略**独立开发**，与任何交易执行项目无依赖、无交付关系。
 
-> 本仓库是 Markowitz 项目的**主仓库**（agent 项目）：agent 运行纪律（CLAUDE.md）、方法学与公开组件。进行中的日内策略研究放在子项目 [Intraday](https://github.com/xhqing/Intraday) 仓库（见下方[仓库版图](#仓库版图)）。
+> 本仓库是 Mark 项目的**主仓库**（agent 项目）：agent 运行纪律（CLAUDE.md）、方法学与公开组件。进行中的日内策略研究放在子项目 [Intraday](https://github.com/xhqing/Intraday) 仓库（见下方[仓库版图](#仓库版图)）。
 
 ---
 
@@ -31,7 +31,7 @@ edge 来自可复现的数学严谨：
 - **walk-forward 跨年验证**：样本内说明不了什么；样本外零衰减才是及格线。
 
 <p align="center">
-  <img src="assets/markowitz_workflow.svg" width="100%" alt="Markowitz 工作流：策略设计 → 回测 → 可信度查表 → 策略库沉淀" />
+  <img src="assets/workflow.svg" width="100%" alt="Mark 工作流：策略设计 → 回测 → 可信度查表 → 策略库沉淀" />
 </p>
 
 ## 仓库版图
@@ -44,7 +44,7 @@ edge 来自可复现的数学严谨：
 
 ## xhqing Agent 团队成员
 
-Markowitz 是 [xhqing AI agent 团队](https://github.com/xhqing)的成员——一支覆盖选品、数字生产、增长、交易、法务、测试等职能的拟人化 agent 舰队。完整名册见[团队总览](https://github.com/xhqing)。
+Mark 是 [xhqing AI agent 团队](https://github.com/xhqing)的成员——一支覆盖选品、数字生产、增长、交易、法务、测试等职能的拟人化 agent 舰队。完整名册见[团队总览](https://github.com/xhqing)。
 
 ## 免责声明
 

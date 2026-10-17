@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### 变更（Agent 拟人名更名：Markowitz → Mark）
+
+- **为什么改**（2026-10-17 用户决定）：用户要求把本项目 agent 的拟人名从「Markowitz」改为「Mark」（项目名 QuantStrategistAgent 不变）；全局命名注册表、全局 CLAUDE.md 缩写约定、xhqing 主页名册与采集脚本由 Kit 会话统一更新（CapabilityManagerAgent 镜像同步亦已提交）。
+- **改了什么**（2026-10-17）：① `README.md` / `README_cn.md`——标题、正文 persona 称呼、logo alt、工作流图 alt 全部更名为 Mark；② `CLAUDE.md`（`AGENTS.md` 为其软链）——「Markowitz（马科维茨）」→「Mark（马克）」，正文全部现行指代同步；③ `.claude/skills/quant/SKILL.md` 与 `README.md`——核心 skill 描述与正文更名；④ `assets/logo.svg`——图内文字与 aria-label 更名；⑤ `assets/markowitz_workflow.svg` → `assets/workflow.svg`（文件名去掉旧名、按简单英文名规范改为 `workflow.svg`，图内文字与 aria-label 同步更名；README 引用同步）；⑥ `.commit-cache.md` 拟人名记录同步。历史条目保持原样不改。三个子项目（Intraday / Swing / gridtrader）现行引用同批更名（见各仓库 CHANGELOG）。
+
 ## [0.1.1] - 2026-10-17
 
 ### 变更（2026-10-17 新规：Agent 进驻子项目——新增 AGENTS.md 软链、子项目挂指回软链）

@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/logo.svg" width="320" alt="Markowitz logo" />
+  <img src="assets/logo.svg" width="320" alt="Mark logo" />
 </p>
 
-<h1 align="center">Markowitz — Quant Strategy Agent (HK / US Equities)</h1>
+<h1 align="center">Mark — Quant Strategy Agent (HK / US Equities)</h1>
 
 <p align="center">
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
@@ -14,9 +14,9 @@
 
 <p align="center">🌐 <a href="README_cn.md">简体中文</a></p>
 
-**Markowitz** is a personified AI agent dedicated to **quantitative strategy development** for Hong Kong and US equities, built on [Claude Code](https://claude.com/claude-code). It designs backtestable trading strategies as deterministic code, runs them against years of historical data to calibrate their credibility. Strategies are **developed independently** — no dependency on, and no delivery to, any trade-execution project.
+**Mark** is a personified AI agent dedicated to **quantitative strategy development** for Hong Kong and US equities, built on [Claude Code](https://claude.com/claude-code). It designs backtestable trading strategies as deterministic code, runs them against years of historical data to calibrate their credibility. Strategies are **developed independently** — no dependency on, and no delivery to, any trade-execution project.
 
-> This repository is the **main repository** (the agent project) of the Markowitz system: the agent's operating discipline (CLAUDE.md), methodology, and open components. The active intraday research lives in the **[Intraday](https://github.com/xhqing/Intraday) sub-project repository** (see [Repository Landscape](#repository-landscape)).
+> This repository is the **main repository** (the agent project) of the Mark system: the agent's operating discipline (CLAUDE.md), methodology, and open components. The active intraday research lives in the **[Intraday](https://github.com/xhqing/Intraday) sub-project repository** (see [Repository Landscape](#repository-landscape)).
 
 ---
 
@@ -31,7 +31,7 @@ The edge comes from mathematical rigor that can be reproduced:
 - **Walk-forward, multi-year validation.** In-sample means nothing; out-of-sample with zero degradation is the bar.
 
 <p align="center">
-  <img src="assets/markowitz_workflow.svg" width="100%" alt="Markowitz workflow: strategy design → backtest → credibility table → strategy library" />
+  <img src="assets/workflow.svg" width="100%" alt="Mark workflow: strategy design → backtest → credibility table → strategy library" />
 </p>
 
 ## Repository Landscape
@@ -44,7 +44,7 @@ The edge comes from mathematical rigor that can be reproduced:
 
 ## Part of the xhqing Agent Team
 
-Markowitz is a member of the [xhqing AI agent team](https://github.com/xhqing) — a fleet of personified agents covering product research, digital production, growth, trading, legal, QA and more. See the [team overview](https://github.com/xhqing) for the full roster.
+Mark is a member of the [xhqing AI agent team](https://github.com/xhqing) — a fleet of personified agents covering product research, digital production, growth, trading, legal, QA and more. See the [team overview](https://github.com/xhqing) for the full roster.
 
 ## Disclaimer
 
