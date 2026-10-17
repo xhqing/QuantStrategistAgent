@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### 变更（迁移收尾：CLAUDE.md 三处全局文档旧路径 `~/.claude/` → `~/.pi/agent/`）
+
+- **为什么改**（2026-10-17）：全局权威源已于 2026-10-17 由 `~/.claude/` 迁至 `~/.pi/agent/`（见全局 `~/.pi/agent/docs/capability-sync.md`「2026-10-17 权威源迁移」），本项目 `CLAUDE.md` 仍残留三处迁移前旧路径引用（由跨会话迁移收尾任务检出）——旧路径在本机已不存在，引用悬空且会误导读者。
+- **改了什么**（2026-10-17）：`CLAUDE.md`（`AGENTS.md` 为其软链）三处修正——① 「工作规则」节通用规范三件套句：全局 `~/.claude/CLAUDE.md` → `~/.pi/agent/CLAUDE.md`；② 「子项目清单」节标题句：`~/.claude/docs/agents-registry.md` → `~/.pi/agent/docs/agents-registry.md`；③ 同节 2026-10-17 规则段括号内的细则引用同步修正。历史 CHANGELOG 条目中的旧路径保持原样不改（历史记录照旧）。
+
 ### 变更（Agent 拟人名更名：Markowitz → Mark）
 
 - **为什么改**（2026-10-17 用户决定）：用户要求把本项目 agent 的拟人名从「Markowitz」改为「Mark」（项目名 QuantStrategistAgent 不变）；全局命名注册表、全局 CLAUDE.md 缩写约定、xhqing 主页名册与采集脚本由 Kit 会话统一更新（CapabilityManagerAgent 镜像同步亦已提交）。

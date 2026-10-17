@@ -62,19 +62,19 @@ Mark 的核心产物是**量化策略代码 + 回测标定的可信度查表**�
 
 ## 工作规则
 
-通用工作规范三件套（verify-before-report / file-operation-priority / tmp-dir-for-artifacts）已全文并入全局 `~/.claude/CLAUDE.md`『工作规则』节、随全局 CLAUDE.md 自动加载，项目不再维护副本。开源 clone 者请把这三条规则自行并入自己的全局指令文件（权威源见 CapabilityManagerAgent 仓库的 `claude/CLAUDE.md`）。
+通用工作规范三件套（verify-before-report / file-operation-priority / tmp-dir-for-artifacts）已全文并入全局 `~/.pi/agent/CLAUDE.md`『工作规则』节、随全局 CLAUDE.md 自动加载，项目不再维护副本。开源 clone 者请把这三条规则自行并入自己的全局指令文件（权威源见 CapabilityManagerAgent 仓库的 `claude/CLAUDE.md`）。
 
 > 事实性 / 数值性结论先验证再陈述（实体归属、算术、日历、API 字段、费率），禁止把推测当事实——这条是量化工作的底线：策略代码里的每一个数值都必须有据可查、可复现。
 
 ## 子项目清单（智能体专属文件归属，2026-10-12 修订）
 
-本项目（Mark）负责维护以下子项目（与全局 `~/.claude/docs/agents-registry.md`「子项目映射」表保持一致）：
+本项目（Mark）负责维护以下子项目（与全局 `~/.pi/agent/docs/agents-registry.md`「子项目映射」表保持一致）：
 
 - **QuantStrategistAgent（Mark）→ Intraday**：日内尺度策略研究（订单流 mbo 特征、分钟级 ML 信号、walk-forward 验证、执行口径模拟）。
 - **QuantStrategistAgent（Mark）→ Swing**：独立仓库 [xhqing/Swing](https://github.com/xhqing/Swing)，日 K 趋势跟随策略工具集（美股大盘股，Python，完整文档 + 回测验证 + 可信度标定）。
 - **QuantStrategistAgent（Mark）→ gridtrader**：独立仓库 [xhqing/gridtrader](https://github.com/xhqing/gridtrader)，网格交易策略开发及回测工具（Python / backtrader，Pipenv 管理依赖，`get_data_scripts/` 拉数据、`data/` 放样例数据）。
 
-按 2026-10-17 全局规则「智能体专属文件归属与子项目映射」（细则见 `~/.claude/docs/agents-registry.md` 同名节，取代 2026-10-12 的「子项目一律不得存在」）：智能体专属文件（`CLAUDE.md`、`AGENTS.md`、`.claude/`、项目级 `.pi/`）的**实体只在本项目（Agent 项目）**；**三个子项目根目录各挂两条指回本项目的软链接**——`AGENTS.md → ../QuantStrategistAgent/AGENTS.md`、`.pi → ../QuantStrategistAgent/.pi`（随仓库提交）——在子项目目录开会话即继承 Mark 的身份与规则（Agent 进驻子项目；quant skill 权威源仍只在本项目 `.claude/skills/quant/`，不向子项目复制副本）；**通过 intercom / agent_call / agent_wake 为 Mark 在后台开启 pi 会话，仍只能以本项目根目录为工作目录**（工具按注册表校验）——子项目的工作在本项目会话里按路径操作（如 `git -C <子项目目录>`）。
+按 2026-10-17 全局规则「智能体专属文件归属与子项目映射」（细则见 `~/.pi/agent/docs/agents-registry.md` 同名节，取代 2026-10-12 的「子项目一律不得存在」）：智能体专属文件（`CLAUDE.md`、`AGENTS.md`、`.claude/`、项目级 `.pi/`）的**实体只在本项目（Agent 项目）**；**三个子项目根目录各挂两条指回本项目的软链接**——`AGENTS.md → ../QuantStrategistAgent/AGENTS.md`、`.pi → ../QuantStrategistAgent/.pi`（随仓库提交）——在子项目目录开会话即继承 Mark 的身份与规则（Agent 进驻子项目；quant skill 权威源仍只在本项目 `.claude/skills/quant/`，不向子项目复制副本）；**通过 intercom / agent_call / agent_wake 为 Mark 在后台开启 pi 会话，仍只能以本项目根目录为工作目录**（工具按注册表校验）——子项目的工作在本项目会话里按路径操作（如 `git -C <子项目目录>`）。
 
 ## commit skill 检测缓存
 
