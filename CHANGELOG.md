@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### 变更（新增子项目 NewsScoreStudy：由 Victor 移交本项目负责，2026-10-26 用户决定）
+
+- **为什么改**：面试实操题研究仓库 `NewsScoreStudy`（评估「大模型给新闻打的分（-1~1）值不值得交易」）原归 Victor（DayTradingAgent），用户 2026-10-26 决定改由 Mark 负责——本项目正是量化策略研究岗，「信号值不值得交易」属策略研究范畴而非日内执行范畴。
+- **改了什么**：① 「子项目清单」新增 NewsScoreStudy 条目（含路径 `/Users/xhq/Developer/NewsScoreStudy`、私有远程仓库 `xhqing/NewsScoreStudy`、内容与交付物、移交日期）；② 同节规则句里的「三个子项目根目录各挂两条软链接」改为「**各子项目（Intraday、Swing、gridtrader、NewsScoreStudy）**根目录各挂两条」，避免以后新增子项目时又出现写死的数字。仓库侧对应改动：该仓库根的 `AGENTS.md` / `.pi` 两条软链接已由指回 DayTradingAgent 改指本项目（加载 Mark 身份与 quant skill）。
+- **边界与注意事项**：仓库物理位置未变，仍在原路径（`~/Developer/NewsScoreStudy`，与各子项目同级），**不在本项目目录内**；该仓库当前只有题目存档 + 原始数据 + 骨架，`PLAN.md` 未开写（用户尚未决定是否做该选题）。
+- **回归风险**：无——只新增子项目清单条目与文档措辞，不动量化代码、数据与回测逻辑；`settle-repo-check` 收尾巡检从本次起把 NewsScoreStudy 纳入本项目「负责仓库必须干净」的检查范围（预期行为）。
+
 ### 变更（迁移收尾：CLAUDE.md 三处全局文档旧路径 `~/.claude/` → `~/.pi/agent/`）
 
 - **为什么改**（2026-10-17）：全局权威源已于 2026-10-17 由 `~/.claude/` 迁至 `~/.pi/agent/`（见全局 `~/.pi/agent/docs/capability-sync.md`「2026-10-17 权威源迁移」），本项目 `CLAUDE.md` 仍残留三处迁移前旧路径引用（由跨会话迁移收尾任务检出）——旧路径在本机已不存在，引用悬空且会误导读者。

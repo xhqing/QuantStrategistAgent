@@ -73,8 +73,9 @@ Mark 的核心产物是**量化策略代码 + 回测标定的可信度查表**�
 - **QuantStrategistAgent（Mark）→ Intraday**：日内尺度策略研究（订单流 mbo 特征、分钟级 ML 信号、walk-forward 验证、执行口径模拟）。
 - **QuantStrategistAgent（Mark）→ Swing**：独立仓库 [xhqing/Swing](https://github.com/xhqing/Swing)，日 K 趋势跟随策略工具集（美股大盘股，Python，完整文档 + 回测验证 + 可信度标定）。
 - **QuantStrategistAgent（Mark）→ gridtrader**：独立仓库 [xhqing/gridtrader](https://github.com/xhqing/gridtrader)，网格交易策略开发及回测工具（Python / backtrader，Pipenv 管理依赖，`get_data_scripts/` 拉数据、`data/` 放样例数据）。
+- **QuantStrategistAgent（Mark）→ NewsScoreStudy**（`/Users/xhq/Developer/NewsScoreStudy`）：面试实操题研究仓库——评估「大模型给新闻打的分（-1~1）值不值得交易」（模拟数据、股票代码已匿名化、仅用于本次评估；Python 研究代码 + 可执行回测，交付 `PLAN.md` / `REPORT.md` / `NOTES.md`）。私有远程仓库 [xhqing/NewsScoreStudy](https://github.com/xhqing/NewsScoreStudy)。2026-10-26 由 Victor（DayTradingAgent）移交本项目负责（当时仅改归属、仓库仍在原路径）。
 
-按 2026-10-17 全局规则「智能体专属文件归属与子项目映射」（细则见 `~/.pi/agent/docs/agents-registry.md` 同名节，取代 2026-10-12 的「子项目一律不得存在」）：智能体专属文件（`CLAUDE.md`、`AGENTS.md`、`.claude/`、项目级 `.pi/`）的**实体只在本项目（Agent 项目）**；**三个子项目根目录各挂两条指回本项目的软链接**——`AGENTS.md → ../QuantStrategistAgent/AGENTS.md`、`.pi → ../QuantStrategistAgent/.pi`（随仓库提交）——在子项目目录开会话即继承 Mark 的身份与规则（Agent 进驻子项目；quant skill 权威源仍只在本项目 `.claude/skills/quant/`，不向子项目复制副本）；**通过 intercom / agent_call / agent_wake 为 Mark 在后台开启 pi 会话，仍只能以本项目根目录为工作目录**（工具按注册表校验）——子项目的工作在本项目会话里按路径操作（如 `git -C <子项目目录>`）。
+按 2026-10-17 全局规则「智能体专属文件归属与子项目映射」（细则见 `~/.pi/agent/docs/agents-registry.md` 同名节，取代 2026-10-12 的「子项目一律不得存在」）：智能体专属文件（`CLAUDE.md`、`AGENTS.md`、`.claude/`、项目级 `.pi/`）的**实体只在本项目（Agent 项目）**；**各子项目（Intraday、Swing、gridtrader、NewsScoreStudy）根目录各挂两条指回本项目的软链接**——`AGENTS.md → ../QuantStrategistAgent/AGENTS.md`、`.pi → ../QuantStrategistAgent/.pi`（随仓库提交）——在子项目目录开会话即继承 Mark 的身份与规则（Agent 进驻子项目；quant skill 权威源仍只在本项目 `.claude/skills/quant/`，不向子项目复制副本）；**通过 intercom / agent_call / agent_wake 为 Mark 在后台开启 pi 会话，仍只能以本项目根目录为工作目录**（工具按注册表校验）——子项目的工作在本项目会话里按路径操作（如 `git -C <子项目目录>`）。
 
 ## commit skill 检测缓存
 
