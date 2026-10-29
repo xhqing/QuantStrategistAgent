@@ -66,7 +66,7 @@ Mark 的核心产物是**量化策略代码 + 回测标定的可信度查表**�
 
 > 事实性 / 数值性结论先验证再陈述（实体归属、算术、日历、API 字段、费率），禁止把推测当事实——这条是量化工作的底线：策略代码里的每一个数值都必须有据可查、可复现。
 
-## 子项目清单（智能体专属文件归属，2026-10-12 修订）
+## 子项目清单（智能体专属文件归属，2026-10-30 修订）
 
 本项目（Mark）负责维护以下子项目（与全局 `~/.pi/agent/docs/agents-registry.md`「子项目映射」表保持一致）：
 
@@ -75,7 +75,7 @@ Mark 的核心产物是**量化策略代码 + 回测标定的可信度查表**�
 - **QuantStrategistAgent（Mark）→ gridtrader**：独立仓库 [xhqing/gridtrader](https://github.com/xhqing/gridtrader)，网格交易策略开发及回测工具（Python / backtrader，Pipenv 管理依赖，`get_data_scripts/` 拉数据、`data/` 放样例数据）。
 - **QuantStrategistAgent（Mark）→ NewsScoreStudy**（`/Users/xhq/Developer/NewsScoreStudy`）：面试实操题研究仓库——评估「大模型给新闻打的分（-1~1）值不值得交易」（模拟数据、股票代码已匿名化、仅用于本次评估；Python 研究代码 + 可执行回测，交付 `PLAN.md` / `REPORT.md` / `NOTES.md`）。私有远程仓库 [xhqing/NewsScoreStudy](https://github.com/xhqing/NewsScoreStudy)。2026-10-26 由 Victor（DayTradingAgent）移交本项目负责（当时仅改归属、仓库仍在原路径）。
 
-按 2026-10-17 全局规则「智能体专属文件归属与子项目映射」（细则见 `~/.pi/agent/docs/agents-registry.md` 同名节，取代 2026-10-12 的「子项目一律不得存在」）：智能体专属文件（`CLAUDE.md`、`AGENTS.md`、`.claude/`、项目级 `.pi/`）的**实体只在本项目（Agent 项目）**；**各子项目（Intraday、Swing、gridtrader、NewsScoreStudy）根目录各挂两条指回本项目的软链接**——`AGENTS.md → ../QuantStrategistAgent/AGENTS.md`、`.pi → ../QuantStrategistAgent/.pi`（随仓库提交）——在子项目目录开会话即继承 Mark 的身份与规则（Agent 进驻子项目；quant skill 权威源仍只在本项目 `.claude/skills/quant/`，不向子项目复制副本）；**通过 intercom / agent_call / agent_wake 为 Mark 在后台开启 pi 会话，仍只能以本项目根目录为工作目录**（工具按注册表校验）——子项目的工作在本项目会话里按路径操作（如 `git -C <子项目目录>`）。
+按 2026-10-30 全局规则「智能体专属文件归属与子项目映射」（细则见 `~/.pi/agent/docs/agents-registry.md` 同名节，取代 2026-10-17 的「`.pi` 也挂软链接」）：智能体专属文件（`CLAUDE.md`、`AGENTS.md`、`.claude/`、项目级 `.pi/`）的**实体只在本项目（Agent 项目）**；**各子项目（Intraday、Swing、gridtrader、NewsScoreStudy，及其 worktree `NewsScoreStudy-code-review`）根目录按两层处理**——① **身份层**：`AGENTS.md → ../QuantStrategistAgent/AGENTS.md` 软链接，必须与项目保持一致（pi 的上下文文件只从全局 + 祖先目录 + 当前目录加载，没有 include / 导入机制，做超集只能靠复制、复制必然漂移；且子项目里的会话仍是同一个 agent，身份本就不该分叉）；② **能力层**：`.pi/` 是子项目自己的**真实目录**（不再是软链接），`.pi/settings.json` 用路径把本项目的 `extensions` / `skills` / `prompts` / `themes` 四个资源目录引用进来，本地独有内容放子项目自己的 `./extensions` / `./skills` 等同名目录（`.pi/` 下这四个目录本来就会被自动发现、不必写进 settings）——行为上是超集，结构上无副本、不漂移，且子项目写自己的 `.pi` 不会污染本项目与兄弟子项目。链接与配置随仓库提交。**纪律**：子项目 `.pi` 只允许**追加**，不允许重述 / 覆盖基座规则；子项目专属**规则**用 `.pi/APPEND_SYSTEM.md` 追加（**不要用 `.pi/SYSTEM.md`**——那是整体替换，会把 Mark 的身份冲掉）。quant skill 权威源仍只在本项目 `.claude/skills/quant/`，不向子项目复制副本。**通过 intercom / agent_call / agent_wake 为 Mark 在后台开启 pi 会话，仍只能以本项目根目录为工作目录**（工具按注册表校验）——子项目的工作在本项目会话里按路径操作（如 `git -C <子项目目录>`）。
 
 ## commit skill 检测缓存
 

@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### 变更（子项目 `.pi` 由软链接改为真实目录 + 资源引用：全局规矩 2026-10-30 修订）
+
+- **为什么改**：全局 `~/.pi/agent/docs/agents-registry.md`「智能体专属文件归属与子项目映射（2026-10-30 修订）」取代 2026-10-17 版。旧形态把 `.pi` 整个挂成指向本项目的软链接，把「共享」和「独占」压在了同一个符号上：子项目要放自己的配置时无处安放，硬写进 `.pi` 等于直接写进本项目——会瞬间影响全部兄弟子项目、还进本项目 git 历史。而 `AGENTS.md` 没有 include / 导入机制，做超集只能靠复制、复制必然漂移。新规则分层：身份层（`AGENTS.md` 软链接）保持一致，能力层（`.pi/`）在子项目建真实目录、用 `settings.json` 以路径引用本项目资源目录，本地专属内容放子项目自己的目录——行为上是超集，结构上无副本、不漂移。
+- **改了什么**：① 本文件（`AGENTS.md` 为指向它的软链接）「子项目清单」节标题改为「2026-10-30 修订」，规则段重写为两层模型（身份层软链接 / 能力层真实 `.pi/` + `settings.json` 路径引用），补上纪律（子项目 `.pi` 只允许追加，专属规则用 `APPEND_SYSTEM.md`、禁用 `SYSTEM.md`），并把子项目 worktree `NewsScoreStudy-code-review` 一并列入；② 子项目侧的 `.pi` 改造（删软链接 → 真实目录 + `settings.json`）：`Intraday` / `Swing` / `gridtrader` / `NewsScoreStudy`（`NewsScoreStudy-code-review` 为其 worktree，随仓库快进同步），各处具体变更与验证记在各自仓库的 CHANGELOG。本项目自己的 `.pi`（`skills -> ../.claude/skills`）不动。
+- **验证**：据 pi 官方文档（`settings.md`「Resources」——项目 `.pi/settings.json` 的路径相对 `.pi` 解析、支持 `~`、路径可为目录并递归收集；`skills.md` / `extensions.md`——`.pi/{skills,extensions,prompts,themes}` 的自动发现照常生效）；在 `Intraday` 子项目目录实跑 `pi --approve -p --no-session`，技能列表里 `quant` 正常加载（经本项目 `.pi/skills -> ../.claude/skills` 解析），无 `settings.json` 解析报错。
+- **规则出处**：全局 `~/.pi/agent/docs/agents-registry.md`「智能体专属文件归属与子项目映射（2026-10-30 修订）」节。
+
 ### 变更（新增子项目 NewsScoreStudy：由 Victor 移交本项目负责，2026-10-26 用户决定）
 
 - **为什么改**：面试实操题研究仓库 `NewsScoreStudy`（评估「大模型给新闻打的分（-1~1）值不值得交易」）原归 Victor（DayTradingAgent），用户 2026-10-26 决定改由 Mark 负责——本项目正是量化策略研究岗，「信号值不值得交易」属策略研究范畴而非日内执行范畴。
