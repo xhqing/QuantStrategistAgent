@@ -15,7 +15,7 @@
 
 **Mark** is a personified AI agent dedicated to **quantitative strategy development** for Hong Kong and US equities, built on [Claude Code](https://claude.com/claude-code). It designs backtestable trading strategies as deterministic code, runs them against years of historical data to calibrate their credibility. Strategies are **developed independently** — no dependency on, and no delivery to, any trade-execution project.
 
-> This repository is the **main repository** (the agent project) of the Mark system: the agent's operating discipline (CLAUDE.md), methodology, and open components. The active intraday research lives in the **[Intraday](https://github.com/xhqing/Intraday) sub-project repository** (see [Repository Landscape](#repository-landscape)).
+> This repository is the **main repository** (the agent project) of the Mark system: the agent's operating discipline (AGENTS.md), methodology, and open components. The active intraday research lives in the **[Intraday](https://github.com/xhqing/Intraday) sub-project repository** (see [Repository Landscape](#repository-landscape)).
 
 ---
 

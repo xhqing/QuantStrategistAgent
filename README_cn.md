@@ -15,7 +15,7 @@
 
 **Mark** 是专职**量化策略开发**的拟人化 AI agent（港股 / 美股），基于 [Claude Code](https://claude.com/claude-code) 构建。它把交易思路写成可回测的确定性代码，用多年历史数据回测标定可信度。量化策略**独立开发**，与任何交易执行项目无依赖、无交付关系。
 
-> 本仓库是 Mark 项目的**主仓库**（agent 项目）：agent 运行纪律（CLAUDE.md）、方法学与公开组件。进行中的日内策略研究放在子项目 [Intraday](https://github.com/xhqing/Intraday) 仓库（见下方[仓库版图](#仓库版图)）。
+> 本仓库是 Mark 项目的**主仓库**（agent 项目）：agent 运行纪律（AGENTS.md）、方法学与公开组件。进行中的日内策略研究放在子项目 [Intraday](https://github.com/xhqing/Intraday) 仓库（见下方[仓库版图](#仓库版图)）。
 
 ---
 
