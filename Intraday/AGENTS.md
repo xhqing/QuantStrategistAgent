@@ -1,6 +1,6 @@
 # Intraday（日内尺度策略研究）
 
-> 原独立仓库 `xhqing/Intraday`（远端仓库保留为存档），2026-11-08 并入 Mark 仓库成为 `Intraday/` 目录。历史提交已随并入保留在仓库 git 历史里。
+> 原独立仓库 `xhqing/Intraday`（远端仓库保留为存档，完整提交历史在那边），2026-11-08 并入 Mark 仓库成为 `Intraday/` 目录。
 
 日内尺度策略研究：订单流 mbo 特征、分钟级 ML 信号、walk-forward 验证、执行口径模拟。代码在 `intraday/` 子目录下（因此层级是 `Intraday/intraday/`）。
 
