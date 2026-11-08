@@ -35,7 +35,7 @@ The edge comes from mathematical rigor that can be reproduced:
 
 ## Repository Landscape
 
-One repository holds the agent project **and** the three research projects. They used to be separate repositories; since 2026-11-08 they live here as directories (the old repositories remain online as read-only archives, and their commit history was carried over into this repository's history).
+One repository holds the agent project **and** the three research projects. They used to be separate repositories; since 2026-11-08 they live here as directories. The old repositories remain online as read-only archives, and they keep their full commit history — this repository took the content over in a single commit.
 
 | Directory | What it is |
 |---|---|

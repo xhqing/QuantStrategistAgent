@@ -1,6 +1,6 @@
 # gridtrader（网格交易策略工具集）
 
-> 原独立仓库 `xhqing/gridtrader`（远端仓库保留为存档），2026-11-08 并入 Mark 仓库成为 `gridtrader/` 目录。历史提交已随并入保留在仓库 git 历史里。原仓库默认分支是 `master`（当时定的），并入后随 Mark 仓库走 `main`，不再有单独的分支。
+> 原独立仓库 `xhqing/gridtrader`（远端仓库保留为存档，完整提交历史在那边），2026-11-08 并入 Mark 仓库成为 `gridtrader/` 目录。原仓库默认分支是 `master`（当时定的），并入后随 Mark 仓库走 `main`，不再有单独的分支。
 
 网格交易策略开发及回测工具（Python / backtrader，Pipenv 管理依赖）。工具只做回测，**不下单、不接实盘**。
 

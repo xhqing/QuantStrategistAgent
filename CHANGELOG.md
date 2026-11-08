@@ -8,11 +8,17 @@
 
 ## [Unreleased]
 
+### 更正（并入历史表述：本仓库是单个提交接手，原历史在存档仓库里，2026-11-08）
+
+- **为什么改**：上一版把并入说成「原仓库的提交历史完整保留在本仓库 git 历史里」，与事实不符——并入用的是 `git subtree add`（本地确实引入了完整历史），但 PR 走的是仓库规定的 **squash 合并**，历史在合进 main 时被压成一个提交。继续这么写等于给后来者一个错误前提（以为 `git log -- Intraday/` 能翻到原仓库的逐条提交）。
+- **改了什么**：`README.md` / `README_cn.md` 的仓库版图说明、本条 CHANGELOG 的相应句子、以及 `Intraday/` / `Swing/` / `gridtrader/` 三个 `AGENTS.md` 的开头说明，统一改为「原仓库保留为只读存档、**完整提交历史在存档仓库里**；本仓库整块接手内容（单个提交）」。
+- **原始历史仍在**：三个 GitHub 存档仓库（`xhqing/Intraday`、`xhqing/Swing`、`xhqing/gridtrader`）保存着并入前的全部提交；本地另有 `chore/absorb-subprojects` 分支留着 subtree 引入的那串历史。
+
 ### 变更（Intraday / Swing / gridtrader 三个子项目仓库并入本仓库成为三个目录，2026-11-08）
 
 - **为什么改**：用户 2026-11-08 决定「这三个子项目退化为 Mark 仓库下面的三个目录」。三个研究项目各自占一个仓库，导致每次改动都要在三个仓库各走一遍 PR + CI + 发版流程，而它们其实是同一个研究方向的三条腿（日内 / 日 K 趋势 / 网格）；同时团队正在把「Agent 项目 ↔ 子项目」的关系改为完全独立，减少仓库数量是同一方向上的第一步。
 - **改了什么**：
-  - 三个仓库用 `git subtree add` 并入本仓库的 `Intraday/`、`Swing/`、`gridtrader/` 三个前缀，**原仓库的提交历史完整保留**在本仓库 git 历史里（三个 GitHub 远端仓库保留为只读存档）。
+  - 三个仓库用 `git subtree add` 并入本仓库的 `Intraday/`、`Swing/`、`gridtrader/` 三个前缀，内容整块并入（三个 GitHub 远端仓库保留为只读存档，**它们原有的完整提交历史在存档仓库里**；本仓库是单个提交接手，不携带原仓库的逐条提交）。
   - 被忽略的数据与运行时产物（`Intraday/intraday/{data_cache,models,output}/`、`Swing/engine/{data_cache,output}/`、`Swing/rotation/output/`、`Intraday/DATA-LOCATION.local.md`）一并搬到新位置，保持原来的忽略口径；`__pycache__` 丢弃（可即时重生）。
   - 删除三个目录里已无意义的仓库级文件：`AGENTS.md` 软链接（改为各目录自己的实体 `AGENTS.md`，承载原 `.pi/APPEND_SYSTEM.md` 的全部硬约束）、`.pi/`、`.github/`（GitHub 不读子目录 workflow）、`LICENSE.md`（根许可证覆盖全仓库）、`VERSION`（版本权威收敛到仓库根）、`.commit-cache.md`。
   - 三份 `CHANGELOG.md` 添加「历史记录、自并入之日起定格」的说明并保留全部历史内容；新改动一律记本文件。
