@@ -1,0 +1,75 @@
+# Changelog
+
+本文件记录 gridtrader 每个版本的主要变更，格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
+
+### 新增（CI 门禁：validate 检查 + master 分支 strict 保护）
+
+- **为什么改**：用户 2026-11-03 立规「新建仓库一律必须 strict 模式的 PR CI」，并要求 28 个不合规的存量仓库统一执行最新标准。本项目此前在 PR 上没有门禁——改动合进 master 全靠人工把关，PR 可以拿旧 master 上通过的检查直接合并，回归防护存在缺口。本次补齐团队要求的「三件套」：PR 上真实跑的 CI 检查 + 挂成 required status check + `required_status_checks.strict = true`。
+- **改了什么**（2026-11-03）：新增 `.github/workflows/validate.yml`（PR 与 master push 触发，检查名 `validate`）与 `.github/scripts/validate.py`（仓库卫生检查：必备文件存在、敏感文件未被跟踪、被跟踪文件不超过 10 MB、README 相对链接有效、Python / Shell 语法检查）；master 分支保护补挂 required check `validate` 并设 `strict=true`。
+- **边界**：检查只做确定性、低误报的项目（required check 一旦误报就会卡住正常 PR，所以宁可少查）；不改动仓库任何原有内容。
+
+## [Unreleased]
+
+### 新增（`.pi/APPEND_SYSTEM.md`：本仓库的项目级硬约束）
+
+- **为什么改**：用户 2026-11-07 定下全局 Leader / Worker 分工——Agent 项目根目录的会话是 Leader（同步 local main、建 worktree、派任务、收尾），子项目根 / 子项目 worktree 的会话是 Worker（只在 worktree 里干具体活）。子项目之所以独立成仓库，正是因为它有专属规则与工具；这些规则不能上提到 Agent 项目（一上提就污染兄弟子项目），而 pi 只加载 cwd 这一层的 `.pi/`、不向上继承，所以必须落在子项目自己的 `.pi/APPEND_SYSTEM.md` 里，Worker 启动即加载。
+- **改了什么**（2026-11-07）：新增 `.pi/APPEND_SYSTEM.md`（37 行），只写本仓库特有的硬约束——① 默认分支是 `master`（不是 main），PR 目标填 master；② 数据契约：`data/` 下的 CSV 既是示例也是回测基准，不许覆盖 / 原地替换，`gridrun()` 要求严格 6 列顺序（`time,open,high,low,close,volume`），两份 A 股 CSV 是 baostock 原始导出的 14 列、需另存才能回测；③ 环境：依赖一律 Pipenv（`Pipfile` 声明 Python 3.7）管理，不全局 pip install；④ 策略口径：1440 根中轨、±2.5% 区间、0.5% 间距 11 档、`order_target_percent` 调仓，改参数必须附改动前后账户价值对比并记 CHANGELOG；⑤ 运行入口。
+- **边界**：只追加本仓库专属规则，不重述 Agent 身份与全局规则（身份层由 `AGENTS.md` 软链接提供、通用规则见全局 `~/.pi/agent/AGENTS.md`）；不改动任何回测代码、样例数据与版本号。
+
+### 变更（子项目 `.pi` 由软链接改为真实目录 + 资源引用：全局规矩 2026-10-30 修订）
+
+- **为什么改**：全局 `~/.pi/agent/docs/agents-registry.md`「智能体专属文件归属与子项目映射（2026-10-30 修订）」取代 2026-10-17 版。旧形态把 `.pi` 整个挂成指向 QuantStrategistAgent 的软链接，把「共享」和「独占」压在了同一个符号上：本仓库要放自己的配置时无处安放，硬写进 `.pi` 等于直接写进 Agent 项目——会影响到 Mark 的全部兄弟子项目、还会进 Agent 仓库的 git 历史。而 `AGENTS.md` 没有 include 机制，做超集只能靠复制、复制必然漂移。新规则分层：身份层 `AGENTS.md` 继续用软链接保持一致，能力层 `.pi/` 改成本仓库的真实目录、用 `settings.json` 以路径引用 Agent 项目的资源目录，本地专属内容放自己的目录——行为上是超集，结构上无副本、不漂移。
+- **改了什么**：删除 `.pi` 软链接（原指向 `../QuantStrategistAgent/.pi`），改为真实目录加 `.pi/settings.json`：`extensions` / `skills` / `prompts` / `themes` 四组各指向 `~/Developer/QuantStrategistAgent/.pi/` 下的对应目录，并附带本地 `./extensions` / `./skills` / `./prompts` / `./themes`（本地目录不存在时自动跳过）。`AGENTS.md` 软链接保持不变。本项仅涉及开发环境配置，不影响网格回测脚本与版本号。
+- **验证**：据 pi 官方文档（`settings.md`「Resources」——项目 `.pi/settings.json` 的路径相对 `.pi` 解析、支持 `~`、路径可为目录并递归收集；`skills.md` / `extensions.md`——`.pi/{skills,extensions,prompts,themes}` 的自动发现照常生效）；同批在 `Intraday` 子项目实跑 `pi --approve -p` 跑通，技能 `quant` 正常加载（来自 Agent 项目，经其 `.pi/skills -> ../.claude/skills` 解析），本仓库 `.pi/settings.json` 内容与之完全一致。
+- **规则出处**：全局 `~/.pi/agent/docs/agents-registry.md`「智能体专属文件归属与子项目映射（2026-10-30 修订）」节。
+
+### 变更（Agent 拟人名更名：Markowitz → Mark）
+
+- **为什么改**（2026-10-17 用户决定）：用户要求把本体系 agent 的拟人名从「Markowitz」改为「Mark」（项目名 QuantStrategistAgent 不变）；全局命名注册表、全局 CLAUDE.md 缩写约定、xhqing 主页名册与采集脚本由 Kit 会话统一更新。
+- **改了什么**（2026-10-17）：`README.md` / `README_cn.md` 子项目说明中的拟人名由 Markowitz 改为 Mark。历史条目保持原样不改。
+
+## [0.1.2] - 2026-10-17
+
+### 变更（2026-10-17 新规：Agent 进驻子项目——挂 AGENTS.md / .pi 两条指回软链）
+
+- **为什么改**（2026-10-17 用户决定）：全局规则修订「智能体专属文件归属与子项目映射（2026-10-17 修订）」，取代 2026-10-12 的「子项目不得存在」：智能体专属文件的**实体只在 Agent 项目**，子项目不放实体、不复制内容；每个子项目根目录挂两条相对路径软链接 `AGENTS.md → ../QuantStrategistAgent/AGENTS.md`、`.pi → ../QuantStrategistAgent/.pi`（随仓库提交），在子项目目录开会话即继承 Markowitz 的身份 / 规则 / 技能 / 扩展 / 设置（「Agent 进驻子项目」）；后台开启 / 唤醒会话仍只以 Agent 项目根为工作目录。
+- **改了什么**（2026-10-17）：新增 `AGENTS.md`、`.pi` 两条软链接（均指向同级目录的 QuantStrategistAgent 项目；`.pi` 经其 `skills -> ../.claude/skills` 解析到 quant skill，本仓库不再持有任何副本）。quant skill 权威源仍在主仓库；子项目内不再有其他智能体专属文件。
+
+## [0.1.1] - 2026-10-12
+
+### 变更（智能体专属文件清理：CLAUDE.md / .claude 删除）
+
+- **为什么改**（2026-10-12）：全局新规「智能体专属文件只属于 Agent 项目」（`~/.claude/docs/agents-registry.md`「智能体专属文件归属与子项目映射（2026-10-12 修订）」，取代原「子项目 `.claude/` 超集」规则）：`CLAUDE.md`、`AGENTS.md`、`.claude/`、项目级 `.pi/` 等「会话启动时按工作目录加载、表征智能体身份」的项目级文件只有 Agent 项目允许拥有，非 Agent 项目（含本子项目）一律不得存在；后台会话只能以 Agent 项目根目录为工作目录。
+- **改了什么**（2026-10-12）：删除 `CLAUDE.md`、`.claude/`（quant skill 副本、空的 `commands/`、本机 `settings.local.json`）；`.gitignore` 移除全部 `.claude/*` 规则；`README.md` / `README_cn.md` 目录树去掉 `.claude/skills/quant/` 行。核查：`main.py` / `gridtrader.py` 不依赖 `.claude/`（回测读 `data/` 下 CSV），无脚本受影响；quant skill 权威源仍在主仓库 QuantStrategistAgent 的 `.claude/skills/quant/`。
+
+## [0.1.0] - 2026-10-09
+
+### 新增（项目标配补全：README 双语化 + LOGO + 徽章 + LICENSE.md + 检测缓存）
+
+- **为什么改**（2026-10-09）：commit skill 第 9 步标配检测发现本仓库缺多项项目标配——README 双语 + LOGO + 标准徽章 + 版权署名段、LICENSE.md、GitHub About、检测缓存等（均为此前缺失项），按该 skill 规则缺则补全。
+- **改了什么**（2026-10-09）：① `README.md` 正文由中文改写为英文（面向全球读者）、结构标准化（LOGO / 徽章 / 工作原理 / 快速开始 / 目录结构 / 版权署名）；② 新增 `README_cn.md` 中文版（与英文版镜像、两版相互跳转）；③ 新增 `assets/logo.svg`（640×200 圆角渐变横幅：🔳 + 项目名 + 定位副标题，已过 icon-design 文字边界硬校验）；④ 新增 `LICENSE.md`（MIT、版权人 `All Contributors`，附中英双语投资风险免责条款，与兄弟仓库同模板）；⑤ GitHub About 补中英双语 description + topics（quant / grid-trading / backtrader / backtesting / python / ai-agent / claude-code）；⑥ 新增 `.commit-cache.md`（commit skill 检测缓存）；⑦ CHANGELOG 顶部 `[Unreleased]` 改为 `[0.1.0] - 2026-10-09`（版本标题与 VERSION 对齐——本仓库尚未发布过 Release，0.1.0 为首版）。
+
+### 变更（AutoMemory 遗留文件不入库：memory/ 与 settings 模板归档移出）
+
+- **为什么改**（2026-10-09）：全局 AutoMemory 已弃用（现行约定「新建项目一律不配 `.claude/memory/`」），兄弟仓库均已不含此类文件——Swing、主仓库 QuantStrategistAgent（Markowitz）的 `.claude/` 仅保留 `skills/quant/`；Intraday 拆分时也已删除同类文件（其 CHANGELOG 记录理由：memory 内容与门面仓库绑定、settings 属本机配置）。本仓库 2026-08-29 首次同步时带入的 `memory/`（2 文件）、`settings.json`、`settings.local.example.json` 属历史遗留，不应入库（否则与家族现状和现行约定分叉）。
+- **改了什么**（2026-10-09）：`memory/README.md`、`memory/MEMORY.md`、`settings.json`、`settings.local.example.json` 四个文件从工作区移出、归档至本机 `tmp/removed-automemory-scaffold-20261009/`（`tmp/` 已 gitignore，不入库、可回溯）；本机配置文件 `settings.local.json` 保留原位（已被 `.gitignore` 隔离、不入库）。入库的 `.claude/` 与家族现状对齐：仅 `skills/quant/` 超集副本。
+
+### 变更（体系叙事同步：删去 Victor / DayTradingAgent 关联表述，量化策略独立开发）
+
+- **为什么改**（2026-09-19）：主仓库 QuantStrategistAgent 叙事修正（用户裁定：Markowitz 量化策略独立开发、与 DayTradingAgent 无关系），随附嵌文同步清理，避免旧叙事继续误导。
+- **改了什么**（2026-09-19）：`CLAUDE.md` 随附嵌文同步主仓库 5 处修订（定位句独立开发、第 4 步沉淀策略库、独立边界块、中性化表述）。本仓库其余文件零改动（`g` 公式推导出处链接为参考文献引用，保留）。
+
+### 变更（CLAUDE.md 删去「由 Claude Code 自动加载」说明句）
+
+- **为什么改**：用户 2026-09-12 要求 CLAUDE.md 不再强调本文由 Claude Code 加载，团队全部项目的 CLAUDE.md 统一清理此类语句。
+- **改了什么**（2026-09-12）：`CLAUDE.md` 开头角色定位行删去句尾「本文件由 Claude Code 在每次会话开头自动加载。」，角色描述本身保留。
+
+### 新增（纳入 QuantStrategistAgent（Markowitz）子项目体系：`.claude/` 超集关系建立）
+
+- **为什么改**：用户指定 gridtrader 由 QuantStrategistAgent（Markowitz）负责维护。按全局规则「Agent 项目与子项目的 `.claude/` 超集关系」（2026-08-10 立），Agent 项目 `.claude/` 为权威源、子项目 `.claude/` 为其超集——保证用户只操作子项目时，子项目也体现该项目归 Markowitz 负责。
+- **改了什么**：
+  - 新增 `.claude/` 目录：从 QuantStrategistAgent 逐字节同步全部文件——`memory/`（MEMORY.md / README.md）、`settings.json`、`settings.local.example.json`、`settings.local.json`（本机配置，已被上方 `.gitignore` 隔离）、`skills/quant/`（量化策略开发 skill：schema、backtest、data、三个策略模块、可信度查表等）。运行时数据不同步：`skills/quant/data_cache/`（45 MB parquet 行情缓存，可从数据源重生）、`output/`（回测产物）、`__pycache__/`（字节码缓存）。
+  - 新增本文件 `CLAUDE.md`：子项目自身说明 + QuantStrategistAgent `.claude/CLAUDE.md` 全文随附（带指代说明，「本项目」均指 QuantStrategistAgent）。
+  - 新增项目标配文件：`.gitignore`、`VERSION`、`CHANGELOG.md`（本文件）。
+  - 权威源侧同步：QuantStrategistAgent `CLAUDE.md` 新增「子项目清单」节登记本子项目。
+- **边界**：`data/` 下样例 CSV（沪深指数 / 个股 / 币安分段）为仓库原有跟踪内容，保持不动。
