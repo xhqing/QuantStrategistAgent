@@ -1,0 +1,349 @@
+# Changelog
+
+本文件记录 Intraday 每个版本的主要变更，格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。2026-09-13 前的条目为拆分前原 QuantStrategistAgent 项目所记，保留原貌不改。
+
+### 新增（CI 门禁：validate 检查 + main 分支 strict 保护）
+
+- **为什么改**：用户 2026-11-03 立规「新建仓库一律必须 strict 模式的 PR CI」，并要求 28 个不合规的存量仓库统一执行最新标准。本项目此前在 PR 上没有门禁——改动合进 main 全靠人工把关，PR 可以拿旧 main 上通过的检查直接合并，回归防护存在缺口。本次补齐团队要求的「三件套」：PR 上真实跑的 CI 检查 + 挂成 required status check + `required_status_checks.strict = true`。
+- **改了什么**（2026-11-03）：新增 `.github/workflows/validate.yml`（PR 与 main push 触发，检查名 `validate`）与 `.github/scripts/validate.py`（仓库卫生检查：必备文件存在、敏感文件未被跟踪、被跟踪文件不超过 10 MB、README 相对链接有效、Python / Shell 语法检查）；main 分支保护补挂 required check `validate` 并设 `strict=true`。
+- **边界**：检查只做确定性、低误报的项目（required check 一旦误报就会卡住正常 PR，所以宁可少查）；不改动仓库任何原有内容。
+
+## [Unreleased]
+
+### 新增（`.pi/APPEND_SYSTEM.md`：本仓库的项目级硬约束）
+
+- **为什么改**：用户 2026-11-07 定下全局 Leader / Worker 分工——Agent 项目根目录的会话是 Leader（同步 local main、建 worktree、派任务、收尾），子项目根 / 子项目 worktree 的会话是 Worker（只在 worktree 里干具体活）。子项目之所以独立成仓库，正是因为它有专属规则与工具；这些规则不能上提到 Agent 项目（一上提就污染兄弟子项目），而 pi 只加载 cwd 这一层的 `.pi/`、不向上继承，所以必须落在子项目自己的 `.pi/APPEND_SYSTEM.md` 里，Worker 启动即加载。
+- **改了什么**（2026-11-07）：新增 `.pi/APPEND_SYSTEM.md`（37 行），只写本仓库特有的硬约束——① 数据位置：`intraday/data_tick/`（约 25GB）不在本机、本体在 macmini，要跑依赖它的脚本改用 `macmini_run`，`data_cache/` / `output/` / `models/` 是可重生产物不入库，Databento API key 只从 `~/.zshrc` 读；② 口径铁律：label / 评估必须用成交价 F（委托价 label 是已被推翻的锚点回归伪影）、坏点清洗（`close <= 0`）、不重叠采样、walk-forward、训练 / 测试解耦、双边 6bps 成本、限价成交率用 `queue_sim.py` 队列口径而非触及上界、跨年零调参复验、美股时区；③ 结论与文档纪律：每条结论写进 `CHANGELOG.md` + `intraday/README.md` + `intraday/CONCLUSIONS.md`，旧结论不删只标订正，已证伪方向不重复试验；④ 常用入口。
+- **边界**：只追加本仓库专属规则，不重述 Agent 身份与全局规则（身份层由 `AGENTS.md` 软链接提供、通用规则见全局 `~/.pi/agent/AGENTS.md`）；不改动任何研究脚本、数据与版本号。
+
+### 变更（子项目 `.pi` 由软链接改为真实目录 + 资源引用：全局规矩 2026-10-30 修订）
+
+- **为什么改**：全局 `~/.pi/agent/docs/agents-registry.md`「智能体专属文件归属与子项目映射（2026-10-30 修订）」取代 2026-10-17 版。旧形态把 `.pi` 整个挂成指向 QuantStrategistAgent 的软链接，把「共享」和「独占」压在了同一个符号上：本仓库要放自己的配置时无处安放，硬写进 `.pi` 等于直接写进 Agent 项目——会影响到 Mark 的全部兄弟子项目、还会进 Agent 仓库的 git 历史。而 `AGENTS.md` 没有 include 机制，做超集只能靠复制、复制必然漂移。新规则分层：身份层 `AGENTS.md` 继续用软链接保持一致，能力层 `.pi/` 改成本仓库的真实目录、用 `settings.json` 以路径引用 Agent 项目的资源目录，本地专属内容放自己的目录——行为上是超集，结构上无副本、不漂移。
+- **改了什么**：删除 `.pi` 软链接（原指向 `../QuantStrategistAgent/.pi`），改为真实目录加 `.pi/settings.json`：`extensions` / `skills` / `prompts` / `themes` 四组各指向 `~/Developer/QuantStrategistAgent/.pi/` 下的对应目录，并附带本地 `./extensions` / `./skills` / `./prompts` / `./themes`（本地目录不存在时自动跳过）。`AGENTS.md` 软链接保持不变。本项仅涉及开发环境配置，不影响研究脚本与版本号。
+- **验证**：据 pi 官方文档（`settings.md`「Resources」——项目 `.pi/settings.json` 的路径相对 `.pi` 解析、支持 `~`、路径可为目录并递归收集；`skills.md` / `extensions.md`——`.pi/{skills,extensions,prompts,themes}` 的自动发现照常生效）；在本仓库目录实跑 `pi --approve -p`，技能 `quant` 正常加载（来自 Agent 项目，经其 `.pi/skills -> ../.claude/skills` 解析）。
+- **规则出处**：全局 `~/.pi/agent/docs/agents-registry.md`「智能体专属文件归属与子项目映射（2026-10-30 修订）」节。
+
+### 变更（Agent 拟人名更名：Markowitz → Mark）
+
+- **为什么改**（2026-10-17 用户决定）：用户要求把本体系 agent 的拟人名从「Markowitz」改为「Mark」（项目名 QuantStrategistAgent 不变）；全局命名注册表、全局 CLAUDE.md 缩写约定、xhqing 主页名册与采集脚本由 Kit 会话统一更新。
+- **改了什么**（2026-10-17）：① `README.md` / `README_cn.md` 中全部现行指代（标题、介绍段、体系表格、免责声明、署名节）更名为 Mark（中文音译「马科维茨」→「马克」）；② GitHub About description 中英双语同步更名（`Markowitz's intraday research base` → `Mark's intraday research base`）。历史条目保持原样不改。
+
+## [0.1.2] - 2026-10-17
+
+### 变更（2026-10-17 新规：Agent 进驻子项目——挂 AGENTS.md / .pi 两条指回软链）
+
+- **为什么改**（2026-10-17 用户决定）：全局规则修订「智能体专属文件归属与子项目映射（2026-10-17 修订）」，取代 2026-10-12 的「子项目不得存在」：智能体专属文件的**实体只在 Agent 项目**，子项目不放实体、不复制内容；每个子项目根目录挂两条相对路径软链接 `AGENTS.md → ../QuantStrategistAgent/AGENTS.md`、`.pi → ../QuantStrategistAgent/.pi`（随仓库提交），在子项目目录开会话即继承 Markowitz 的身份 / 规则 / 技能 / 扩展 / 设置（「Agent 进驻子项目」）；后台开启 / 唤醒会话仍只以 Agent 项目根为工作目录。
+- **改了什么**（2026-10-17）：新增 `AGENTS.md`、`.pi` 两条软链接（均指向同级目录的 QuantStrategistAgent 项目；`.pi` 经其 `skills -> ../.claude/skills` 解析到 quant skill，本仓库不再持有任何副本）。quant skill 权威源仍在主仓库；子项目内不再有其他智能体专属文件。
+
+## [0.1.1] - 2026-10-12
+
+### 变更（智能体专属文件清理：CLAUDE.md / AGENTS.md / .claude / .pi / .zcode 删除；运行数据与脚本引用迁至普通目录）
+
+- **为什么改**（2026-10-12）：全局新规「智能体专属文件只属于 Agent 项目」（`~/.claude/docs/agents-registry.md`「智能体专属文件归属与子项目映射（2026-10-12 修订）」，取代原「子项目 `.claude/` 超集」规则）：`CLAUDE.md`、`AGENTS.md`、`.claude/`、项目级 `.pi/` 等「会话启动时按工作目录加载、表征智能体身份」的项目级文件只有 Agent 项目允许拥有，非 Agent 项目（含本子项目）一律不得存在；后台会话只能以 Agent 项目根目录为工作目录。本仓库原有的一整套（`CLAUDE.md` + `AGENTS.md` 软链接 + `.claude/` + `.pi/` + `.zcode/`）须清理。
+- **改了什么**（2026-10-12）：
+  - **删除**：`CLAUDE.md`、`AGENTS.md`（软链接）、`.claude/`（含 quant skill 副本与 `__pycache__`）、`.pi/`（软链接）、`.zcode/`（软链接，原指向 `.claude/skills`）。
+  - **迁移（避免研究脚本报废）**：`.claude/skills/quant/data_cache/`（K 线 parquet 缓存，约 258MB）→ `intraday/data_cache/`；`.claude/skills/quant/output/`（回测产物）→ `intraday/output/`；新增 `intraday/data.py`（quant skill `data.py` 的原样副本，提供 `load_cache` / `STOCK_POOL`，供脚本读取本地缓存；权威源仍在主仓库 QuantStrategistAgent 的 `.claude/skills/quant/`）。
+  - **脚本同步（7 个）**：`etf_recent.py` / `etf_rev.py` / `futu_wf.py` / `mom_open.py` / `overnight_map.py` 的缓存路径常量改指 `intraday/data_cache/`；`ml_orderflow.py` / `ml_trend.py` 的 `sys.path` 改插本目录（用 `intraday/data.py`）。已实测：`load_cache('US.QQQ','DAY')` 正常读取（5040 根）。
+  - **文档 / 配置同步**：`README.md` / `README_cn.md` 目录树与 data-sources 引用改指普通目录与主仓库；`.gitignore` 移除全部 `.claude/*` 规则、新增 `intraday/data_cache/` 与 `intraday/output/` 忽略。
+
+### 变更（体系叙事同步：删去 Victor / DayTradingAgent 关联表述，量化策略独立开发）
+
+- **为什么改**（2026-09-19）：主仓库 QuantStrategistAgent 叙事修正（用户裁定：Markowitz 量化策略独立开发、与 DayTradingAgent 无关系），随附嵌文同步清理，避免旧叙事继续误导。
+- **改了什么**（2026-09-19）：`CLAUDE.md` 随附嵌文同步主仓库 5 处修订（定位句独立开发、第 4 步沉淀策略库、独立边界块、中性化表述）。本仓库其余文件零改动（`g` 公式推导出处链接为参考文献引用，保留）。
+
+### 变更（quant skill 权威源移交主仓库，本仓库降为超集副本；运行时数据不动）
+
+- **为什么改**（2026-09-16 用户裁定）：超集规则要求 Agent 项目 `.claude/` 为权威源，quant skill 权威源从本仓库迁回主仓库 QuantStrategistAgent（新建其 `.claude/skills/quant/`，以本仓库副本为基线）；本仓库保留超集副本与运行时数据，研究代码零影响。
+- **改了什么**（2026-09-16）：① `CLAUDE.md`「目录与产物」节标注 quant skill 权威源在主仓库、本仓库为超集副本（`data_cache/` 等运行时数据继续留本仓库，`intraday/` 脚本直接复用的路径不变）；② 本仓库 skill 文件内容零改动（即权威基线本身）。另：主仓库 README 双语已把 Intraday 可见性改为公开口径（与 GitHub 实测一致）。
+
+### 变更（体系概念修正：定位改为 QuantStrategistAgent 子项目，删「门面 / 本体」表述）
+
+- **为什么改**（2026-09-16 用户裁定）：「私有本体 / 公开门面」概念作废，只有以 Agent 结尾命名的仓库才是真 Agent 项目——Intraday、Swing、gridtrader 均为 QuantStrategistAgent（Markowitz）的子项目。
+- **改了什么**（2026-09-16）：① `CLAUDE.md`（`AGENTS.md` 为其软链接）——开头定位改为「QuantStrategistAgent（Markowitz）的子项目」并列出同门子项目，目录表「研究本体」改「研究代码」，末尾新增主仓库 QuantStrategistAgent 项目根 CLAUDE.md 全文（超集同步）；② `README.md` / `README_cn.md`——标题与正文「研究本体仓库 / 公开门面 / 公开组件」改为「研究仓库 / 主仓库 / 子项目」，体系表格定位列同步改写并补 gridtrader 行，仓库结构注释「Research core」改「Research code」，署名节「体系门面」改「主仓库」。
+
+### 变更（T5 提前执行完成：A 股 ETF 数据快照上传 market-data-backup）
+
+- **为什么改（2026-09-14）**：T11 定夺时 T5 原判保留（等下次快照一起打包）；用户随后指示「T5 也处理掉」——数据已在本地、单独打包成本极低，不必等下次快照。
+- **改了什么**：① 按 quant skill data.py 快照机制打包 SH/SZ 两市场（缓存中恰为 T5 三标的 SH.513050 / SH.513100 / SZ.159920，各含 1m/5m/15m/DAY，SH 17.2MB + SZ 9.0MB tar.gz + manifest sha256），上传 market-data-backup Release `aetf-2026-09-14`（恢复：`python3 data.py restore aetf-2026-09-14`）；② `TODO.local.md` 的 T5 归档（✅已完成），活跃待办仅剩 T9 / T10；tmp/snapshot 打包产物已清理。
+
+### 变更（TODO T11 定夺执行：T1~T4 归档、T5 保留）
+
+- **为什么改（2026-09-14）**：T11（T1~T5 清理定夺）立案后等用户裁定；2026-09-14 用户按建议拍板，待办清单闭环（条目移入归档）。
+- **改了什么**：`TODO.local.md` 移出 5 条入 `TODO-archive.local.md`：T1（A 股 ETF 技术指标回测）✅已放弃——隔夜映射子分支已死（etf_recent.py 归档）+ 技术指标属 2026-08-03 系统性证伪家族，预期结论几乎确定为负；T3（港股通抓大波段）✅已放弃——双边 440bps 成本高于标的日内总振幅中位，且三层独立负面证据下无可用信号；T2 / T4 ✅已完成——排除 / 暂缓决定早已生效，属决策记录占位；T11 本身 ✅已完成。T5（A 股 ETF 数据快照备份）保留——三标的 1m/5m/15m/DAY 四频率已缓存于 data_cache（2020-01~2026-08，共约 40MB），下次快照打包时纳入。
+
+### 变更（TODO 立案 T9~T11 + 全局日期订正 2026-09-14/15 → 2026-09-13）
+
+- **为什么改（2026-09-13）**：① 两条新方向（开盘动量、A 股隔夜反向）当日闭环后，剩余候选方向与 T1~T5 清理定夺需入待办，防丢失；② 发现本日早前写入的条目使用了 2026-09-14 / 2026-09-15 两个未来日期（实际系统时间 2026-09-13，一天内完成的工作被误拆成三天），属未提交内容的笔误，全局订正。
+- **改了什么**：① `TODO.md` 新增 T9（CPI/FOMC 事件驱动检验）、T10（跨标的相对价值配对初筛）、T11（T1~T5 清理定夺待用户裁定），编号自 T9 起（T6~T8 已迁出 Swing，编号不复用）；② 13 个 md/py 文件的 `2026-09-14` / `2026-09-15` 全部订正为 `2026-09-13`（`.commit-cache.md` 为既有缓存未动），涉及 CHANGELOG 六条目、intraday README/STRATEGY/CONCLUSIONS、根 README 双语与 8 个脚本 docstring。
+
+### 新增（A 股隔夜反向修正·近年窗口定版：2023-2026 净期望 +1.8bps、t=0.34，信号死亡，该线归档）
+
+- **为什么改（2026-09-13）**：执行严谨化暴露分年衰减（利润集中 2020-2022）后，按预设判定规则做近年定版——主口径不变（r_us<−1.5% 买入、9:32 进、持 30min、双边 2+2bps），只用 2023-01-01 起的近年数据，三标的组合 + 日聚合（同日三标的 r_us 同源强相关，日聚合消除 t 值虚增）。
+- **改了什么**：新建 `intraday/etf_recent.py`（各标的 / 逐笔池化 / 日聚合三层口径 + 近年分年趋势 + 18 格敏感性网格并声明多重比较风险）。
+- **结果（2023-2026）**：三标的 +1.0 / +1.6 / +2.8 bps（t=0.10~0.67 全不显著）；日聚合 **+1.8 bps/日（t=+0.34）、85 信号日**（年均 23 个）；分年 2023 +2.4 / 2024 +4.7 / 2025 +2.6 / **2026 −1.9**——近年内部无回升、2026 转负。敏感性网格最好格子（9:31 开盘进、持 60min、thr 2%）+11.4bps 属 18 格挑最大 + 最乐观执行口径，不构成翻案（持 60min 普遍优于 30min 是网格里唯一稳定形态，供未来参考）。
+- **判定：信号死亡（<5bps 门槛），A 股隔夜反向修正线归档**。6.5 年平均的 +10~20bps 是 2020-2022 高波动年代的遗产，已被市场定价。TODO T1（A 股 ETF 策略回测）的「隔夜映射」子分支关闭，T1 其余内容（技术指标策略在 A 股 ETF 上的验证）待用户定夺——技术指标家族 2026-08-03 已系统性证伪，在 A 股 ETF 重跑先验极低。
+- **本轮新方向探索累计**：美股开盘动量（负）、A 股隔夜反向（初筛正 → 严谨化衰减 → 近年死亡归档）——两条线均按「便宜快速证伪」原则在一天内闭环。
+
+### 新增（A 股隔夜反向修正的执行严谨化：信号真实但正在衰减，收益集中于 2020-2022 与开盘第一分钟）
+
+- **为什么改（2026-09-13）**：初筛（overnight_map）的「反向 +12~+18bps」混入了不可执行的一半——A 股 ETF 不能裸空，「大涨日做空」无法交易。必须分解多空、并过执行口径 / 成本 / 分年 / 分档四道严谨关。
+- **改了什么**：新建 `intraday/etf_rev.py`：多空分解、持有时长扫描（15/30/60/90/收盘）、执行价格敏感性（9:31/9:32/9:35 进场——富途 1m 的 9:31 bar 覆盖 9:30:00-9:30:59，其 open≈开盘价，竞价单通道可捕获）、成本敏感性（佣金 2bps + 单边滑点 0/2/5bps）、分年 t 值、收益分布、大跌幅分档单调性。
+- **结果（三标的各 ~1599 日，保守口径 = 大跌日买入 r_us<−1.5%、持 30min、双边 2bps）**：
+  - ① **可执行半（大跌日买入）真实且为主**：513050 +24.0bps（t=3.52）、159920 +12.1（t=2.50）、513100 +8.7（t=2.45）——均强于不可执行的做空半（+12.4/+5.5/+1.0），三标的一致；
+  - ② 持有 30~60 分钟最优（15 分钟不足、持到收盘衰减）；执行敏感：9:32 进场利润剩六成（513050 +15.5）、9:35 剩四成——**约一半利润在开盘第一分钟**（竞价单可捕获，但执行精度要求高）；滑点 5bps 下 513050 仍 +10.5、159920/513100 仅剩 +1~3；
+  - ③ **警示：分年衰减**——保守口径分年看，利润集中在 2020-2022（513050 的 2022 单年 +40bps t=3.45），2023-2026 四年三标的均值仅 +0.3~+3.1bps/笔，接近零；
+  - ④ 信号集中在 r_us∈[−2%,−1%] 中档（三标的同构，−3~−2% 极端档反而弱），阈值 1.5% 卡中间有数据窥探风险，但三标的一致性缓解。
+- **诚实结论**：制度性模式真实存在（t=2.5~3.5、机制清晰、跨标的复现），但**正在被定价**——近年（2023-2026）保守口径期望约 0~3bps/笔，扣执行后接近盈亏平衡。作为独立策略先验不足；作为「已持仓资金的日内增强」或配合竞价单执行精度，可能仍有残余价值。下一步候选：近年窗口（2023-2026）单独定版期望、溢价维度分解（需 513050 净值历史）、或记录后转其他方向。
+
+### 新增（新方向并行启动：美股开盘动量复现（负）+ A 股跨境 ETF 隔夜映射（发现反向修正信号））
+
+- **为什么改（2026-09-13）**：订单流方向研究收官后（见上），按「edge 来源机制」排序并行启动两条新线：① A 股跨境 ETF 结构性溢价（T1~T5 延伸，机制=QDII 额度摩擦 + 散户行为 + T+0 稀缺）；② 美股事件驱动（信息稀释假设在信息集中释放时刻最弱的逻辑缺口，首步复现 Gao-Han-Li-Zhou 2018 开盘动量）。两者均零新数据成本（富途分钟 K 现成）。
+- **改了什么**：新建 `intraday/overnight_map.py`（隔夜 QQQ 日收益 → A 股 ETF 开盘跳空 / 开盘后半小时；映射效率回归 + 追 / 反向扣成本交易 + 分年稳定性）与 `intraday/mom_open.py`（QQQ/SPY 首 30 分钟收益 → 当日中段 / 末半小时；IC + 五分组 + 扣成本方向交易 + 分年）。
+- **结果 ②（美股开盘动量，负）**：QQQ/SPY 2020-2026 各 1641 交易日——QQQ corr(r_first,r_mid) Spearman +0.084、扣双边 6bps 后 −2.15bps/日（6/7 年负）；SPY 更弱且分组不单调；r_last 两标的全负（t=−6.8/−7.4）。文献效应（1993-2013 数据）在当前 ETF 上扣成本不存在，开盘分支关闭；CPI/FOMC 分支未测但先验下调。
+- **结果 ①（A 股隔夜映射，正信号待严谨化）**：三个 ETF 2020-2026 各 ~1598 交易日——**开盘对隔夜美股反应不足 + 跳空后半小时反向修正**：513050（中概互联）映射 beta 仅 0.392（R²=0.20），corr(gap, r_post30) = −0.153；扣双边 2bps 后**开盘反向 +12.0 bps（|r_us|>1%，n=667）/ +17.9 bps（|r_us|>1.5%，n=407），追方向 7 年全部为负（跨年稳定）**；159920 反向 +4.0/+8.6 bps；513100（纳指，定价效率最高）弱（+1.3/+4.7）。定价效率排序与 QDII 额度紧张度自洽（中概互联最差 > 恒生 > 纳指）。
+- **初筛边界（诚实）**：r_post30 用 9:31 1m open 计价——开盘瞬间流动性差，成交假设偏乐观，需 9:32 进场稳健版 + 滑点敏感性检验；仅均值未查分布与尾部；持有时长（30 分钟）未扫描；与溢价维度的交互未分解（净值历史待拉）。下一步：持有时长扫描、执行口径稳健化、分年 t 值、溢价条件分解、正式 walk-forward 回测。
+
+### 新增（`intraday/CONCLUSIONS.md`：研究结题记录——三层结论 / 证据链时间线 / 方法学遗产 / 未关闭边界一页可读）
+
+- **为什么改（2026-09-13）**：订单流方向研究收官（见上两条），但最终结论散在 `README.md` 状态节、`STRATEGY.md` 各节与 CHANGELOG 条目里，过程性文档翻起来费时——需要一份独立的结题总结，未来（自己或其他研究者）五分钟读完「结论是什么、证据是什么、还有什么没关」。
+- **改了什么**：新建 `intraday/CONCLUSIONS.md`，六节：① 研究问题（QQQ 分钟尺度订单流方向可否扣成本兑现）；② 最终结论三层——信号不存在（label 伪影，AUC 0.603→F-label 0.508 的根因）/ 执行不可行（队列 46% fill、−1.7bps，四口径表）/ 深度特征无预测力（0.5005/0.4854，46 窗口 0 正）+ 三层独立负面证据；③ 证据链时间线（2026-08-03 ~ 09-15 十步，含每步当时的解读与后续订正）；④ 方法学遗产（伪影检验、队列模拟器、「结果异常即深挖」、纪律框架）；⑤ 未关闭边界（秒级 HFT 尺度、跨标的、未测信号家族、A 股 T1~T5）；⑥ 数据与代码资产。同步在 `intraday/README.md` 目录表加链接。
+
+### 新增（深度订单簿特征构建与检验：CKS 盘口 OFI / 多档深度 / 撤单成交流 / 微结构在分钟尺度无预测力，订单流方向研究收官）
+
+- **为什么改（2026-09-13）**：用户指出上一条结论外推过头——F-label 终极检验只关闭了 15 个基础特征，「更深的信息提取没做过」；文献中 Cont-Kukanov-Stoikov（2014）盘口 OFI 等订单簿特征对短期价格有真实预测力，且现有 `ofi`（A 事件加总版）与 CKS 版（盘口最优档深度变化，含撤单/成交影响）构造不同，该分支必须测过才能负责任地收官。
+- **文档订正（先行）**：全部「委托流信息无预测力」表述改为「现有 15 个基础特征无预测力（深度特征未测）」；「mbo 方向终结」改为限定版——涉及根 README 双语摘要、`intraday/README.md`、`intraday/STRATEGY.md` 与上一条 CHANGELOG 的表述修正。
+- **改了什么**：① 新建 `intraday/deep_features.py`——逐日从 mbo 事件流构建分钟级深度特征 17 个：簿截面（spread_ticks / depth_imb_1 / depth_imb_5 / book_vol_5 / mid 动量 3 个 / ofi_cks 分钟粒度 CKS 调整差分 OFI）+ 事件流（add_imb / cancel_imb / trade_imb（F 被动方反推 taker + T aggressor 方向）/ n_add / n_cancel / cr_ratio / avg_add_size / n_fill / avg_fill_size）；簿状态用价位×分钟深度矩阵（复用 queue_sim 验证过的事件语义与重放），分钟边界取右端、错价 ±1% 过滤、负深度 clamp；产物 `tmp/deep_feat_<year>.parquet`。② 新建 `intraday/verify_deep.py`——deep / all（deep+原 15）/ orig 三特征集，F-label + F 进 F 出双边 6bps，与 verify_flabel 完全同款 walk-forward。
+- **结果（2025 / 2026）**：deep-only AUC **0.5005 / 0.4854**（≈随机甚至反向）、净 −5.8 / −5.6bps、**46 个窗口 0 个正**；orig 基准在新网格 0.5225（扣成本全负）；deep+orig 拼接 0.5272 仍 0/37 正窗口。文献背书的深度特征家族在分钟尺度对真实价格方向无预测力——学术 OFI 预测力集中于秒级/亚秒级（HFT 领域，需专业延迟与基础设施），分钟聚合稀释干净。
+- **终局结论**：「分钟尺度 + 非专业延迟」约束下的订单流信号家族（基础 15 + 深度 17）全部关闭，订单流方向研究收官。与富途成交价口径 5.5 年证伪、公开技术指标系统性证伪共同构成三层独立负面证据。方法学遗产（伪影检验 / 队列模拟 / 深度特征管道）保留可复用。
+- **诚实边界**：ofi_cks 为分钟粒度近似（逐 tick CKS 的粗化，存在跳档失真）；深度特征只测到分钟聚合粒度，秒级尺度未测（超出项目范围）；orig 基准在连续分钟网格上 0.5225 与 verify_flabel 的 0.5078 差异来自网格与样本密度不同，两者都远低于可交易线。
+
+### 新增（延迟扫描 + 伪影发现 + 成交价 label 终极检验：「方向判断力」被证实为委托价 label 伪影，mbo 方向终结）
+
+- **为什么改（2026-09-13 晚）**：队列模拟否定被动执行后，按推进计划做实验①（延迟-期望曲线）回答「主动端提速能否救」——结果曲线异常平坦（0/0.5/1/2/5/10/20/40/60 秒全部 −5.3~−5.4bps），这不是真实的延迟形态，触发对信号本身的根因深挖，最终推翻了当天上午仍成立的「信号方向判断力真实」前提。
+- **发现链（三步）**：① 新建 `intraday/latency_curve.py`（复用 queue_signals 同批 5090 信号，进场 = 信号收盘后延迟 d 秒的下一笔 F 成交价，出场 t+6 委托价收盘，双边 6bps）——延迟曲线平坦异常；② 伪影检验（临时脚本，四日抽样 + 后续全量 5090 信号）：信号分钟 close_t（最后一张 A 委托价）与同分钟末笔 F 成交价的偏差中位 0 但 **24% 信号 >10bps、16% >20bps、5% >120bps**；伪影方向性：做多信号锚点均值 **−28.8bps**、做空 **+31.0bps**——label「未来 close > 当前 close」的主体是委托价偏离盘口的机械回归，模型 qcut 两端专门选出偏离最大的样本；③ 终极检验：新建 `intraday/verify_flabel.py`，特征保持委托流 15 个、label 与评估价换 F 成交价（F 进 F 出双边 6bps）同超参数重训 walk-forward——**2025 年 AUC 0.5078、净 −5.9bps、98 窗口 0 正；2026 年 AUC 0.5146、净 −5.7bps、28 窗口 0 正**——现有 15 个基础特征对真实价格方向无预测力，与富途成交价口径 5.5 年 −6bps（独立数据源）交叉验证。（2026-09-13 表述订正：原表述「委托流信息无预测力」过强——该检验只关闭现有特征集，深度特征家族未测，见下一条。）
+- **结论（2026-09-13 订正为限定版）**：现有特征集的 mbo 主线归档（深度特征分支未关闭）。当天上午的队列模拟结论（fill 46%、逆向选择）降为第二层死因（真实世界里无信号可执行的表象）；根因是 label 口径泄漏（委托价锚点偏离回归）。富途实验的「edge 只在委托簿口径」订正为「委托簿口径的 edge 是伪影」。
+- **方法学遗产**：① 委托价口径与成交价口径是两个世界，用委托价做 label 会引入锚点回归伪影——任何 mbo/盘口数据研究的前置检验；② 队列优先级模拟方法（事件语义实测 + 重放平衡验证 + 同信号对照）可复用；③ 纪律框架（坏点清洗、不重叠采样、walk-forward、同口径对照）被反复验证有效。
+- **同步更新**：根 `README.md` / `README_cn.md`（双语状态摘要重写为终局版，同一轮对齐）；`intraday/README.md`（研究状态置顶终结条目 + 订正说明）；`intraday/STRATEGY.md`（头部状态重写 + 新增「第 0 节终局订正」+ 第 7/9 节标题与内容订正 + 第 10 节改为终局结论 + 证据链补 3 行 + 代码地图补 2 行）。
+- **诚实边界**：F 成交价的分钟聚合用 ffill 对齐（盘前无成交分钟剔除）；label 用分钟末笔成交价而非 mid-quote（两者差异远小于伪影量级，不影响结论）；verify_flabel 的采样与 verify_2025 同款但 label 换 F 价后样本数 13267（剔除无成交分钟），窗口切分同结构。
+
+### 新增（队列优先级 fill rate 模拟：触及口径上界被击穿，策略回到「不可交易」，决定性）
+
+- **为什么改（2026-09-13）**：`limit_sim.py` 的 touch/strict 口径只验证「价格到过挂单价」，是 fill 的乐观上界；STRATEGY.md 第 10 节挂着「真实队列优先级 fill rate 是实盘化前的最后一关」。用户要求立即做 order_id 级委托队列模拟，把这最后一个未知数落定。
+- **改了什么**：新建 `intraday/queue_sim.py`（三阶段：signals 生成信号表 → sim 逐日队列模拟 → report 对比汇总）。核心设计：① **事件语义实测验证**——XNAS.ITCH mbo 的 A = 挂入 +size、C = 从该价位移除 size（leave qty，与同 order 同 ts 的 F 配对为成交性移除）、F = 成交明细、T 不占簿；用「A +size / C −size」全天重放验证平衡（深度平稳 3~10 万股、bid<ask 恒立、spread 1 tick）后才定型；② **队列模型**（Cont et al. 标准假设）——挂单时刻队列前置量 Q0（当日从 00:00 UTC 重放，Nasdaq 无隔夜单）→ 窗口内撤单性移除前移队列（`q = max(0, q−s)`，撤单不吃单）、成交性移除吃队列（`s > q` → fill）；fill_all（撤单让位）/ fill_exec（保守下界）双口径；marketable（挂单时刻对手侧 ±5 tick 有存量）直接按对手最优价成交；③ **同信号验证**——信号生成与 limit_sim 同代码路径，2025 年 5090 信号逐行 (date, pos) 对齐一致；单信号 Q0 手工复算一致；queue fill ⊆ touch 无反例。
+- **结果（2025 年 5090 信号，与 limit_sim 同批）**：δ=0 真实队列 fill **46.0%**（fill_all）/ 36.0%（fill_exec）vs 触及口径 94.7%/92.5%；**每信号期望 −1.7bps**（vs 触及口径 +24.3）；分月四个月皆负、多空皆负、δ 0~10 美分全网格皆负。分解：marketable 31.6%（条件收益 −3.9bps）+ 排队成交 14.4%（条件收益 −3.5bps）+ 排队未成交 54%；Q0 中位 400 股；排队 fill 时机中位挂单后 1.7 秒。2026 年对照（1456 信号）：fill 41.1%、期望 −2.5bps——跨年复现。
+- **机制结论（maker 单逆向选择）**：轮到你的成交恰是价格瞬间砸穿队列的时刻（信号失败方向）；价格温和回踩、会赚钱的信号队列轮不到你。触及口径的 +23.4bps 本质是「用未来信息挑选成交时机」的幻觉。「edge 怕延迟不怕被动等」订正为「**edge 怕延迟、也怕排队**」。
+- **波及结论**：① 2026-08-30 的「不可交易被推翻」再次被推翻，回到「不可交易」（但这次的证据是队列级的、比 08-29 的市价口径更本质：主动 / 被动触及 / 被动队列三口径全负）；② Databento Plus $1,780/月订阅讨论关闭；③ 信号预测力（AUC 0.603）本身未被否定，被否定的是执行形态。
+- **同步更新**：`intraday/README.md`（研究状态首条 + 数据成本讨论关闭 + 风险局限重写）、`intraday/STRATEGY.md`（一句话状态、第 7 节四口径表、第 8 节证据链、第 9 节物理图像订正、第 10 节未决→已落定、第 11 节代码地图）。
+- **诚实边界**：忽略自身挂单影响（净单 << 档位深度）、部分成交按全成计、marketable 只扫 ±5 tick、挂单假设零延迟（真实延迟只会让 fill 更低，结论偏乐观方向）；2026 年分钟数据重建有 3.7% 窗口漂移（读段偶发跳段），故 2026 对照只做总体量级、不做逐信号对齐（2025 的逐信号对齐不受影响）。
+
+### 变更（仓库定位改为独立项目：清除现状描述中全部 Victor / DayTradingAgent 定位表述）
+
+- **为什么改（2026-09-13）**：用户明确本项目是独立的，与 Victor（DayTradingAgent）无关，现状 / 定位类文档不再提 Victor——此前「研究结论经回测验证后作为 Victor 加权投票」「未交付 Victor」等表述均基于旧定位（2026-08-05 已改为「用户单独使用」，本次彻底清干净）。
+- **改了什么**：① `intraday/STRATEGY.md` 状态行去掉「、未交付 Victor」；② 根 `CLAUDE.md`（`AGENTS.md` 软链接同源）「本仓库做什么」改为「独立的研究项目，结论以同口径回测为准」；③ 根 `README.md` / `README_cn.md` 同步改（双语同一轮对齐）；④ quant skill（`.claude/skills/quant/`，`.pi` / `.zcode` 软链接同源）：`SKILL.md` description 与「定位」节重写为「独立、可回测的量化策略研究」、正文 11 处 Victor 表述改为中性（交付使用 / 使用者自行综合），`README.md` 定位节重写，`schema.md` 6 处字段说明去 Victor，`backtest.py` docstring 1 处去 Victor。
+- **保留（历史记录，不改）**：CHANGELOG 2026-09-13 前旧条目、`TODO-archive.md` 归档条目按「保留原貌不改」继续留痕；`schema.md` / `backtest.py` 中 g 公式完整推导的出处链接（指向该推导文档所在仓库）保留——是数学溯源，非项目定位。
+
+### 新增（`intraday/STRATEGY.md`：当前策略原理的系统性梳理）
+
+- **为什么改（2026-09-13）**：用户要求把当前最新策略原理梳理成 MD 文档。散落在 `intraday/README.md` 研究状态节、各实验脚本 docstring 与 CHANGELOG 条目里的口径与结论，需要一个静态汇总——专门回答「这个策略到底在交易什么、怎么交易、证据到哪一步、还差什么」。
+- **改了什么**：新建 `intraday/STRATEGY.md`（与已拆出的 Swing 仓库文档结构对齐），共 11 节：① 策略定位（QQQ 双向 6 分钟方向分类器）；② 信息源（mbo 委托簿口径 vs 成交价口径的信息世界分离）；③ 15 特征清单（4 订单流 + 11 价格量能）；④ 标签与采样（不重叠、无止损、risk=entry）；⑤ LightGBM + walk-forward（8 天训练 / 2 天测试、固定超参数）；⑥ 信号生成（qcut 五档取两端）；⑦ 执行口径（回测上限 / t+1 市价 / t+1 限价挂单三口径对比，「edge 怕延迟不怕被动等」）；⑧ 证据链时间线（8 个实验）；⑨ edge 物理图像（三句话）；⑩ 边界与未决问题（fill 上界、出场未优化、单标的等）；⑪ 代码地图。同步在 `intraday/README.md` 头部与目录表加链接。
+### 新增（信号衰减曲线扩展至 60 分钟：edge 存活窗口定格——稳健区 H≤12、H≈25~30 归零）
+
+- **为什么改（2026-09-13）**：原衰减曲线只扫了 H=1..6，结论停在「6 分钟内 AUC 单调衰减、多持有不多赚」，但没回答「6 分钟以外信号到哪一分钟衰减到没有 edge」——拐点位置决定持仓时长上限与「是否存在第二个可开采窗口」。用户提问后补扫 H=7..30（逐分钟）+ 40/50/60（长锚点）。
+- **实验口径**：与 H=1..6 完全同口径（`intraday/decay_curve.py`，2025 年 79602 分钟、坏点清洗后、同 15 特征、同超参数、同窗口切分、零调参，每个 H 独立 walk-forward）。
+- **结果（分段均值，明细 `tmp/decay_curve.json`）**：① **稳健 edge 区 H≤12**——正窗口占比 92%（H=1~6 段）→ 80%（H=7~12 段）、每笔净 +24.2 → +21.4bps；② **衰减带 H≈13~24**——正窗口 65.6%（13~18 段）→ 52.6%（19~24 段）、净 +16.6 → +12.1bps，仍正但靠少数窗口撑，不稳健；③ **H≈25~30 起 edge 归零**——正窗口 48.7%、净 +8.9bps（25~30 段均值，逐点 +2.7~+15.3 波动大）；④ **H=40~60 纯噪声区**——正窗口 39.6%、净 +4.4bps，AUC 残留 ~0.55 不构成可交易 edge。每分钟 edge 密度：H=1 25.7bps/分钟 → H=6 4.0 → H=12 1.8 → H=30 0.23 → H=60 0.05（降两个数量级）。
+- **结论**：6 分钟外没有新 edge，只有衰减——按「正窗口 ≥80% + 净值显著为正」的稳健标准，edge 存活约 12 分钟；按宽松标准（净值有意义）撑不到 30 分钟。无断崖，是渐近衰减。信号判断力集中在前几分钟，其后随机游走。
+- **代码变更**：`intraday/decay_curve.py` 加 `--h-list` 参数（非连续 H 列表，长锚点免逐段跑）+ 改为逐 H 落盘（中断不丢已完成结果，原为全部跑完才写盘）。
+- **诚实边界**：① H 增大时样本数减少（13267→1326），逐 H 抖动（如 H=28 AUC 0.522 vs H=29 0.560）是噪声，拐点结论看分段趋势；② 净收益仍是 close[t] 进场上限参考口径（双边 6bps），归零拐点不受口径影响（同口径内相对比较）；③ 仅 2025 年（92 交易日），2026 年对照未跑（26 交易日、H 大时样本更少，统计力不足）。
+
+### 新增（`.zcode/skills` 软链接指向 `.claude/skills`：zcode 会话复用同一份项目 skill）
+
+- **为什么改（2026-09-13）**：zcode（另一个 coding agent 工具）同样从项目级 `.zcode/skills/` 读取 skill，与 `.pi/skills` 同一模式建软链接，保证多工具共用同一份 skill、不产生副本分叉。
+- **改了什么**：新建 `.zcode/skills` 软链接，目标为相对路径 `../.claude/skills`（与 `.pi/skills` 完全一致，项目整体移动后链接仍有效）。`.zcode/` 未被 `.gitignore` 忽略，软链接随 git 跟踪。
+
+### 变更（quant skill 补 YAML frontmatter：修复 pi 加载器报 description is required）
+
+- **为什么改（2026-09-13）**：pi（coding agent harness）的 skill 加载器要求 SKILL.md 必带 YAML frontmatter（`name` + `description`），而 quant skill 是按 Claude Code 无 frontmatter 格式写的，导致 `.pi/skills/quant/SKILL.md` 加载报错「description is required」、整卡 skill 在 pi 会话不可用（`.pi/skills` 是指向 `.claude/skills` 的软链接，实际改的是 `.claude/skills/quant/SKILL.md` 一份）。
+- **改了什么**：在 SKILL.md 头部新增 frontmatter——`name: quant`；`description` 按正文「触发规则」节提炼（量化策略开发与回测、数据层拉取与缓存、g / avg_R / 胜率标定可信度、MUST USE 触发场景清单、NOT for 盯盘/下单/实时信号），符合 skill-creator 的 pushy 要求。正文一字未动。
+- **兼容性**：Claude Code 同样支持 frontmatter 格式（name / description 本就是其推荐的元数据），双工具加载均正常。
+
+### 变更（仓库拆分清理：继承 QSAgent 后删除与 Intraday 无关的内容）
+
+- **为什么改（2026-09-13）**：本仓库由原 QuantStrategistAgent 项目拆分而来（体系 = 公开门面 QuantStrategistAgent + 私有研究本体 Intraday（本仓库）+ 公开组件 Swing），拆分时整仓继承了门面仓库的内容，其中大量与日内研究无关（swing 策略工具集、门面 README 与项目指令、对外展示图等），需清除干净。
+- **改了什么**：
+  - 删除 `swing/` 整目录（6 文件：README / STRATEGY / common / check_signal / backtest / analyze）——日 K 策略工具集已独立为公开仓库 [xhqing/Swing](https://github.com/xhqing/Swing)（用户已自行删除并暂存，本条补记 CHANGELOG）。
+  - 删除 `.claude/memory/`（2 文件）、`.claude/settings.json`、`.claude/settings.local.example.json`（用户已自行删除并暂存，本条补记 CHANGELOG）——memory 内容与门面仓库绑定，settings 属 Claude Code 本机配置，私有研究仓库不需要。
+  - 根 `README.md` / `README_cn.md` 全文重写：由「QuantStrategistAgent 公开门面自述」改为「Intraday 私有研究本体自述」——去掉 swing 业绩 / 交付叙述与已失效的 `swing/` 链接、指向门面仓库的 last-commit / visits 徽章，改为体系三仓库定位、研究路径、当前状态摘要与数据源表；徽章改为 License / Focus: Intraday Research / Markets: US (QQQ) / Type: Research。
+  - `CLAUDE.md` 全文重写（`AGENTS.md` 为其软链接、内容自动同步）：由门面项目指令改为本仓库研究指令——保留三条铁律，新增 Databento mbo 数据约束与研究纪律节，删去产物契约细节（指向 quant skill `schema.md`）、gridtrader 子项目清单（属门面仓库职责）、commit skill 检测缓存节（旧位置副本，权威缓存在 `.commit-cache.md`）。
+  - 删除 `assets/backtest_example.png`、`assets/performance.png`、`assets/markowitz_workflow.svg`——均为 swing / 门面对外展示图（回测机制示例与业绩图属 Swing 仓库内容，工作流图属门面 README），新 README 不再引用；`assets/logo.svg` 已是 Intraday 项目 logo，保留。
+  - `.commit-cache.md` 清空全部缓存条目（保留文件头说明）——条目描述的是门面仓库的 GitHub 配置状态，对本私有仓库不成立，待 `/commit` 重新检测。
+  - `intraday/README.md` 定位行改写：原「与已交付的日 K 策略（`swing/`）分开」指向已删除目录，改为指向独立 Swing 仓库。
+  - `.claude/skills/quant/data.py` 注释「项目根 QuantStrategistAgent」→「项目根 Intraday」。
+  - 本机清理 `tmp/charts/`（swing 展示图的生成脚本与中间产物，tmp/ 已 gitignore、不入库）。
+  - CHANGELOG 文件头项目名由 QuantStrategistAgent 改为 Intraday（历史条目原地保留）。
+- **保留不动**：`.claude/skills/quant/`（quant skill——`intraday/` 的 `futu_wf.py` / `ml_orderflow.py` / `ml_trend.py` 直接依赖其 `data_cache/` 与数据层，且回测 / 数据规范仍是在用纪律）、`intraday/` 全部研究代码、`assets/logo.svg`、`TODO.md`（T1~T5 为 A 股日内方向属本仓库；T6~T8 偏日 K 动量轮动 / 组合配置，是否迁出门面待用户定夺）、`VERSION` / `LICENSE.md`。
+
+### 变更（TODO T6~T8 迁出至 Swing 仓库：日 K 级别内容归位）
+
+- **为什么改（2026-09-13）**：上条拆分清理时 T6~T8（外部页面研究成果三条：22 日加权动量轮动移植、腾讯财经日 K 接口接入、全天候风险平价评估）偏日 K / 组合配置级别、与日内研究不同尺度，归属待用户定夺；用户裁定「日 K 级别的内容可以移动到 Swing」。
+- **改了什么**：三条待办自 `TODO.md` 迁出，落入 Swing 仓库（公开仓库 [xhqing/Swing](https://github.com/xhqing/Swing)，本机 clone）首建的 `TODO.md`——保留原编号 T6~T8 便于跨仓库追溯（Swing 后续新编号自 T9 起），正文与原记录时间保留、仅修订跨仓库指向（「T1」等指本仓库待办的表述）与体系措辞；本仓库 `TODO.md` 删除已空的「🟢 绿色紧急度」节，并将「A 股日内 T+0 方向」节标题按 TODO 分节规范补 🟢 颜色标记；新建 `TODO-archive.md`（项目首建）归档原三条，标 ✅**已迁移** + 迁移时间与去向。敏感检查：三条正文仅为策略口径、公开接口 URL 与技术参数，无账户 / 密钥 / 个人隐私，可进公开仓库。
+- **边界**：T7（腾讯日 K 接口）虽随 T6 迁出，其双用途中的本仓库侧（A 股日内待办若需轻量日 K）已在意向中保留——需要时在本仓库另行接入，不跨仓库依赖。
+
+### 新增（`AGENTS.md` 软链接指向 `CLAUDE.md`：多工具共用同一份项目指令）
+
+- **为什么改（2026-09-13）**：用户要求建立软链接。`AGENTS.md` 是多种 agent 工具（ZCode 等）的项目级指令文件约定名，而本项目指令现存于 `CLAUDE.md`。不建软链接就要维护两份副本、必然分叉；建软链接让各工具按各自约定的文件名读到的都是同一份内容，单一权威源。
+- **改了什么**：新建 `AGENTS.md` 软链接，目标为相对路径 `CLAUDE.md`（项目整体移动后链接仍有效）。软链接未被 `.gitignore` 忽略，随 git 跟踪，clone 者同样获得该链接。
+
+### 变更（CLAUDE.md 删去「由 Claude Code 自动加载」说明句）
+
+- **为什么改**：用户 2026-09-12 要求 CLAUDE.md 不再强调本文由 Claude Code 加载，团队全部项目的 CLAUDE.md 统一清理此类语句。
+- **改了什么**（2026-09-12）：`CLAUDE.md` 开头角色定位行删去句尾「本文件由 Claude Code 在每次会话开头自动加载。」，角色描述本身保留。
+
+### 变更（`data_tick` 全量 parquet 重压缩 SNAPPY → ZSTD：41.70GB → 26.89GB，省 36%）
+
+- **为什么改（2026-09-12）**：本机磁盘使用率 91%（228G 仅剩 1.6G），`data_tick` 的 41.7G MBO 行情是最大单一占用。Databento MBO 数据（逐笔委托、大量重复结构）对 zstd 的压缩友好度显著高于 snappy，且 pyarrow 对 zstd parquet 读取无感兼容——读取代码零改动，仅换压缩编码。数据已有云端备份（market-data-backup Release），风险可控。
+- **改了什么**：`intraday/data_tick/` 下 3604 个 parquet 文件（`mbo_days/` 162 天 + 单日验证 1 天 + `mbo_chunks/` + `XNAS-*`）全部从 SNAPPY 重压缩为 ZSTD level 3（实测 level 1/3/6 对比中 level 3 性价比最高：时间几乎同 level 1、压缩率优于之），41.70GB → 26.89GB（省 36%）。每个文件重压缩后均过三重验证（行数一致 + 列名/列类型一致 + 全量读回与原表 `equals` 比对），无一失败；完成后另随机抽取跨日期 5 文件复验 ZSTD 编码且可正常读取，无 `.tmp` 残留。重压缩脚本存于 `tmp/recompress.py`（幂等可续跑，已是 ZSTD 的文件自动跳过）。
+
+### 变更（assets/logo.svg 换为项目象征 logo：与门面拟人头像区分）
+
+- **为什么改**：仓库重组后门面 QuantStrategistAgent 与私有本体 Intraday 的 logo 完全相同（同为 Markowitz 拟人头像 📊），用户裁定视觉区分原则：**拟人实体给拟人头像，项目给项目象征意义的 logo**——门面是拟人实体 Markowitz 的展示面，保留拟人头像；Intraday 是他的子项目，应换项目象征 logo。
+- **改了什么**：`assets/logo.svg` 重制：Markowitz 拟人头像（📊 + Markowitz + Quant Strategist，indigo/violet 渐变）→ 项目象征 logo（⏱️ 秒表 + Intraday + Intraday Trading Research，青→深藏青渐变，与团队其它项目不撞色/不撞 emoji，副标题口径对齐门面 README 对 Intraday 的描述「Active intraday research」）；同步 README.md / README_cn.md 的 img alt「Markowitz logo」→「Intraday logo」。
+
+### 变更（assets/logo.svg 副标题去中文）
+
+- **为什么改**：全局规则新增「Logo / 图标资产文字一律用英文」（2026-09-12 用户立，起因 Swing 仓库 logo 副标题混入中文被指出）：logo 是面向全球读者的视觉标识，中文受众已有 README_cn.md 双语通道；且 SVG 中文依赖查看环境的字体回退，渲染不可控。本次为按新规批量清理存量。
+- **改了什么**：`assets/logo.svg` 副标题「Quant Strategist · 量化策略师」→「Quant Strategist」。
+
+### 新增（`.pi/skills` 软链接指向 `.claude/skills`：pi 会话复用同一份项目 skill）
+
+- **为什么改（2026-09-11）**：pi coding agent 从项目根 `.pi/` 读取项目级 skill，而项目 skill（quant）现存于 `.claude/skills/`。不建软链接就要维护两份副本、必然分叉；建软链接让 pi 会话直接复用 Claude Code 的同一份 skill，单一权威源。
+- **改了什么**：新建 `.pi/skills` 软链接，目标为相对路径 `../.claude/skills`（项目整体移动后链接仍有效）。`.pi/` 未被 `.gitignore` 忽略，软链接随 git 跟踪，clone 者同样获得该链接。
+
+### 新增（信号衰减曲线 + 限价单模拟：「不可交易」结论被推翻——edge 怕延迟但不怕被动等，δ=0 挂单拿到几乎全部 edge）
+
+- **为什么改（2026-08-30）**：上一条订正确立「方向预测力成立（+24.0bps）但 t+1 开盘市价进场归零（−4.8bps）→ 不可交易」后，需回答两个续问：① 预测力在窗口内如何衰减（edge 到底能等多久）？② 既然主动吃延迟拿不到，被动挂单能不能拿到？为此做两个实验，全部与 `intraday/verify_2025.py` 完全同口径（H=6、同 15 特征、同超参数、同窗口切分、零调参，坏点清洗后 2025 年 79602 分钟）。
+- **实验一：信号衰减曲线（`intraday/decay_curve.py`，结果 `tmp/decay_curve.json`）**——对 H=1..6 各自独立训练评估（每个 H 独立 walk-forward，98 窗口），得到 AUC(H) 与净收益(H) 两条曲线：**AUC 随 H 单调衰减 0.638→0.603（判断力集中在前 1 分钟），每笔净收益几乎平坦（+25.7~+21.5bps，多持有不多赚），交易笔数与 H 成反比（H=1 共 21484 笔，是 H=6 的 6 倍）**。解读：edge 在信号后第 1 分钟内兑现，之后是噪声——与「t+1 市价进场归零」自洽，并指向唯一未被证伪的实盘路径：被动挂单。
+- **实验二：限价单模拟（`intraday/limit_sim.py`，明细 `tmp/limit_sim_2025.csv` / 汇总 `tmp/limit_sim_2025.json`）**——信号分钟 t 收盘出信号（挂单价基于 close_t，无未来函数），t+1 分钟挂限价单：做多 limit = close_t − δ、做空 limit = close_t + δ，δ ∈ {0,1,2,5,10} 美分；未触及撤单（记 0）；成交判定双口径（touch = 分钟 low/high 触及、strict = 穿过半 tick）；出场 t+6 收盘市价；成本 maker 进 0 + taker 出 3bps（原口径双边 6bps，被动进场省一半）。2025 年 5090 个信号结果：**δ=0（挂信号价）strict 口径 fill 92.5%、成交笔均 +25.3bps、每信号期望 +23.4bps——与回测口径 +24.0bps 同量级，而同位置主动市价是 −4.8bps**；方向对称（做多条件 +24.0 / 做空 +26.6）；四个月全部为正（6月 +29.0 / 7月 +25.8 / 8月 +27.5 / 9月 +12.3）；δ 越深期望越低（10 美分时 +14.0，「等更好的价」不划算——等得越久 edge 越不在）。
+- **结论改写**：「edge 存活窗口短于一分钟、不可交易」修正为——**edge 怕延迟但不怕被动等：t+1 分钟内以信号价挂限价单，触及口径下拿到几乎全部 edge（+23.4bps/信号 vs 市价 −4.8bps）**。「不可交易」的判定被推翻，Databento Plus 订阅（$1,780/月）的讨论重新打开。2025 全年期望粗算 ≈ 5090 信号 × 23.4bps ≈ 每天 ~980bps × 仓位，量级上覆盖月费重新可能。
+- **两个口径保留（诚实边界）**：① fill 判定是分钟 low/high 触及口径——触及 ≠ 队列优先级轮到你成交，真实 fill rate 会低于 92.5%（尤其价格瞬间穿过的场景），这是**乐观上界**，真值需 order_id 级委托队列模拟；② 出场仍是 t+6 收盘市价 +3bps，主动侧未优化。
+- **下一步**：2026 年对照组同实验在跑（完成后汇总两年对比）；决定性未知数只有一个——**用 mbo 的 order_id 做委托队列模拟，把触及口径 fill 上界压成真实 fill rate**。
+- **代码链接**：[`intraday/decay_curve.py`](intraday/decay_curve.py)（衰减曲线）、[`intraday/limit_sim.py`](intraday/limit_sim.py)（限价单模拟）、[`intraday/verify_2025.py`](intraday/verify_2025.py)（同口径基准与数据加载）、[`intraday/common_wf.py`](intraday/common_wf.py)（共用采样/窗口切分）、[`intraday/ml_orderflow_v2.py`](intraday/ml_orderflow_v2.py)（分钟聚合与特征）。
+
+### 修复（数据坏点虚增收益：verify 订正 +64.7→+24.0 bps；结论改写为「方向预测力成立但不可交易」）
+
+- **为什么改（2026-08-29）**：为做「值不值 $1,780/月」的财务测算（`intraday/economics.py`，逐笔记录交易明细），发现两个致命问题：① mbo 聚合分钟数据混有 **close=0 的坏分钟**（2025 年实测 856 个、分布 72 天、集中 UTC 21~23 时=美股盘后无成交的聚合伪影），模型在坏分钟出信号、以 0 价「成交」，做空假赚 100%——**31 笔假交易虚增净收益 43bps**（+64.7 中真实只有 +22）；② **下一分钟开盘进场（实盘近似）把 edge 全部吃掉**：回测口径 +22.0bps vs 下一分钟开盘 −4.8bps（3512 笔、每月皆负）——预测力存活窗口短于一分钟，扣真实进场延迟后净值为负，实盘口径保本仓位=∞（任何账户规模都付不起月费）。
+- **改了什么**：① `verify_2025.py` 的 `load_minute_year` 加坏点清洗（剔除 close≤0 分钟）+ 改用 pyarrow 选列单文件读（磁盘 89% 满时 pd.read_parquet 的 dataset API 反复 Errno 60 超时）+ 逐段容错（坏段跳过不中断整年）；② `ml_orderflow_v2._agg_minute` 修 pandas 3.0.1 兼容——`pd.DataFrame(dict)` 大 dict 构造触发「Buffer has wrong number of dimensions」回归 bug（38 天聚合失败）改为逐列赋值、`g.apply`（large_vol 行）在部分分组返回 DataFrame 改为分钟桶列 + transform 向量化；③ `economics.py` 修 t0+1 越界与 e2≤0 产生的 -inf。**2025 修正版重跑结果：AUC 0.603（90/98 窗口 >0.52）、净 +24.0 bps/笔（88/98 窗口正）、3596 笔**——方向预测力依然稳健成立（AUC 甚至更高），但量级从 +64.7 订正到 +24.0。
+- **结论改写**：跨年验证的「edge 跨年成立」表述修正为——**mbo 口径有跨年稳定的 6 分钟方向预测力（AUC 0.60/0.59），但在「下一分钟开盘进场」的真实执行假设下净收益为负，不可交易**；Databento Plus 订阅（$1,780/月）**不予考虑**。与富途成交价口径 5.5 年 −6bps 殊途同归。
+- **边界**：2026 修正版数字已补（2026-08-30，剔 3702 个坏分钟后 34 天 18978 分钟：AUC 0.589、15/20 窗口正，净 +39.2bps/笔、18/20 正窗口、726 笔——方向预测力跨年成立在两年都得到确认）；「下一分钟开盘吃掉 edge」的机制已由信号衰减曲线实验回答（见上条：edge 在第 1 分钟内兑现，被动挂单可拿到）。
+
+### 新增（gridtrader 纳入子项目体系：`.claude/` 超集关系建立）
+
+- **为什么改**：用户指定 GitHub 仓库 [xhqing/gridtrader](https://github.com/xhqing/gridtrader)（网格交易策略开发及回测工具，Python / backtrader）由本项目（Markowitz）负责维护。按全局规则「Agent 项目与子项目的 `.claude/` 超集关系」（2026-08-10 立），Agent 项目 `.claude/` 为权威源、子项目 `.claude/` 为其超集——保证用户只操作子项目时，子项目也体现该项目归 Markowitz 负责。
+- **改了什么**：
+  - 本项目 `CLAUDE.md` 新增「子项目清单」节，登记 gridtrader 为子项目。
+  - gridtrader 仓库 clone 到本地后：逐字节同步 `.claude/` 全部文件（`memory/`、`settings.json`、`settings.local.example.json`、`settings.local.json`、`skills/quant/`），运行时数据不同步（`data_cache/` 45 MB 行情缓存、`output/`、`__pycache__/`，均可重生、机器本地）；gridtrader 新建 `.claude/CLAUDE.md`（子项目自身说明 + 本项目 CLAUDE.md 全文随附）；gridtrader 补齐项目标配 `.gitignore`（隔离本机 `settings.local.json` 等）、`VERSION`（0.1.0）、`CHANGELOG.md`。
+  - 全局 `~/.claude/CLAUDE.md`「超集关系映射」表追加 QuantStrategistAgent → gridtrader 一行，并同步 CapabilityManagerAgent `claude/CLAUDE.md` 开源镜像。
+- **敏感信息检查**：同步前对全部待同步文件做过敏感字符串扫描（账户号 / token / password / api key / 密钥等），无命中；gridtrader 为公开仓库，`settings.local.json` 已由其新 `.gitignore` 隔离、不会入库。
+
+### 新增（外部页面研究：ETF 动量轮动工作台完整口径逆向 + 待办 T6~T8）
+
+- **为什么改**：用户提供外部页面 `https://cf1f14b4fc9041f9b348b3443d711a3d.bj8.agentos-app.net/`（「ETF 动量轮动工作台」，agentos-app.net 部署的单页应用），要求研究其内容、把有价值的东西加入待办。页面首屏数据全为「加载中」的动态渲染，Jina Reader 只拿到骨架；改抓完整 HTML（317KB）分析其内嵌纯前端策略引擎 JS，拿到两套策略的完整可复现口径。
+- **研究结论**：页面含两套策略，均为纯前端计算（拦截 `fetch` 把 `/api/*` 请求改走本地 JS 引擎，行情从腾讯财经日 K 接口拉取）：① **22 日加权动量轮动**——收盘价取对数后对交易日序号加权线性回归（权重 1→2 线性），得分 = 年化(`exp(斜率×250)−1`) × R²，上限 6，近 3 日任一日跌超 5% 清零，前 3 等权持有、全无效退默认组合（国证2000/黄金/银行），成本佣金 3‱（最低 5 元）+ 滑点 0.1%，35 只 A 股 ETF 池；② **全天候风险平价**——4 资产池，权重 ∝ 风险预算(债0.4/A股1.5/海外1.5/商品1.2) / 120 日 ES（ES 再按 25 日动量 sigmoid 调整 ×0.75~1.25），20 日周期再平衡 + 15% 偏离提前触发。另含复盘/战绩文案自动生成（小红书/公众号/付费圈子三模板，自带免责声明）——运营侧功能，与量化无关。页面访问密码门为前端明文 `'ETF2026'`，仅装饰性防护。
+- **改了什么**：研究成果写入 `TODO.md` 新增「🟢 绿色紧急度」节 3 条待办——**T6**（移植 22 日动量轮动策略进本项目回测，含完整口径）、**T7**（接入腾讯财经日 K 接口 `proxy.finance.qq.com/ifzqgtimg/appstock/app/fqkline/get` 作 A 股 ETF 日 K 数据源，免费无需 key）、**T8**（评估全天候风险平价是否立项，组合层配置策略、与本项目单标的信号定位不同）。
+
+### 新增（mbo 跨年验证通过 + 2025 数据备份 + 付费调研）
+
+- **跨年验证通过：mbo 委托簿口径 edge 在 2025 年复现（2026-08-24，里程碑）**：为检验「+30bps/笔 只在 2026 年 26 天验证过、是否小样本特例」，用免费额度剩余部分（$75.50）补拉 2025-06-01~09-30 全部 92 个交易日 QQQ mbo（26.4GB，`fetch_mbo.py` 新增 `--start` 参数支持显式日期区间），新建 `intraday/verify_2025.py` 做跨年检验——**完全同口径（同 15 特征、同超参数、同窗口切分，零调参零特征选择）分年独立 walk-forward**。结果：2025 年（98 窗口）AUC 0.588 vs 2026 年（28 窗口）0.587 几乎相同；净收益 **+64.7 bps/笔**（2026 为 +30）、净收益正窗口 83/98（85%）、3569 笔交易。判定：**edge 跨年成立，非 26 天特例**——2025 年 6~9 月波动环境比 2026 年 6~7 月更有利，净收益更高与 AUC 稳定自洽（方向判断力不变、波动放大盈亏）。样本扩至 118 天 / 130 窗口 / 4000+ 笔、跨两个年份。执行注记：8GB 内存机器需分年跑（`verify_2025.py --year 2025/2026`），全量连跑曾因 swap 抖动卡死。
+- **口径验证 + 富途 5.5 年证伪（2026-08-16~17）**：富途 1m 成交价（5.5 年）与 mbo 聚合分钟（委托簿口径）特征相关系数 ≈0——mbo 的 edge 是委托簿口径产物（挂单价/委托量信息），**在免费可得的成交价数据中不存在**；富途 1m 全历史重训 + walk-forward（`intraday/futu_wf.py`，819 窗口）净收益 −6bps/笔，成交价口径无 edge。撤回早前「纯价格即可、无需付费数据」结论（该结论错误地假设了口径一致）。
+- **付费实时数据调研（2026-08-23）**：实盘要拿到与训练口径一致的实时 mbo，最低门槛是 Databento **Plus 订阅 $1,750/月**（+流量 ~$29/月）——官方明示「Usage-based live data is not available for Databento US Equities」，实时 XNAS.ITCH mbo 仅 Plus/Unlimited 含；Standard $199 只有合成 NBBO（无 mbo）、DBEQ.BASIC 零许可费但只覆盖 4 个小交易所（无 Nasdaq）。历史数据按量付费不需订阅（mbo $1.20/GB），是低成本验证通道（本轮 2025 年验证即用此通道）。
+- **2025 数据备份 GitHub Release（2026-08-24）**：98 天 mbo 数据包（2025 全部 92 交易日 + 2026-07-17~08-05 增量 14 天，共 ~24GB）+ manifest（SHA256 逐文件校验）传至私有仓库 `xhqing/market-data-backup` 的 `tick-2025-08-23` Release，远端与本地逐一对账无缺。上传历经代理断流反复（约 4 个文件 3 次重试用尽后单独补传成功）。
+
+### 变更（公开边界配套：README 双版免责声明补齐 + LICENSE 追加投资风险免责条款 + STRATEGY.md 头部一句话免责）
+
+- **为什么改**：交易类项目开源边界配套（2026-08-21 待办 T2）——MIT 的 AS-IS 条款只覆盖软件缺陷、不覆盖投资损失；量化策略仓库尤需明确「回测不代表实盘」。
+- **改了什么**：① README.md / README_cn.md 风险声明段补「用户对每笔交易决策及其造成的损失承担全部责任」句（两版同步）；② LICENSE.md 文末追加中英双语「投资风险免责条款」段（不构成投资建议、回测不代表实盘、风险自担、补充而非替代 MIT 条款）；③ swing/STRATEGY.md 头部 blockquote 加一句话版本免责声明。
+
+### 修复（TODO / MEMO 编号加粗脚本截断事故：批量脚本切片 bug 把条目正文截空，从多恢复源全量重建）
+
+- **为什么改**：上一条「全量补编号」执行时，第二步「编号加粗」脚本存在切片 bug（`m.group(0)[m.end(3)+1:]` 起点算错），把所有被匹配条目的正文截成空壳（只剩 `- [ ] **Tn** `），共波及 1 个文件 5 条。发现后立即启动恢复（无 Time Machine / APFS 快照可用）。
+- **改了什么**：多恢复源重建并回写——① git 暂存区 / HEAD 旧版（TODO.md）；② Claude Code file-history 检查点（Edit 前快照，无）；③ 会话转写重放（按时间序重放历史 Edit / heredoc 写入，补齐检查点之后的新增条目，如 DayTradingAgent 今晚新增的 5 条活跃待办与「2026-08-21 批量处理」4 条归档）。重建后统一按规则加粗编号（**Tn** / **Mn**），DayTradingAgent 连续 T1~T115、DayTradingAgent-win 连续 T1~T44，正文经抽样与恢复源逐字一致。受损壳快照留存本机 tmp（/tmp/todo-damage-backup/）。
+- **边界**：恢复目标是「截断事故前的状态」（即编号未加粗、但已编号的正文完整版）；编号加粗为规则要求的新格式。git 未提交的其它改动不受影响。
+
+### 变更（TODO / MEMO 条目全量补编号：按新立待办编号规则一次性补齐存量）
+
+- **为什么改**：2026-08-21 用户新立全局规则「每条待办必须有唯一待办编号」（格式 T+序号 / M+序号，如 T11 / M11，连写、项目内递增、永不复用、归档保留），并指示存量待办与归档待办全部补上编号——编号用于用户与 AI 针对性沟通（「T11 处理了吗」），避免复述长正文。
+- **改了什么**：TODO.md 5 条补编号 T1~T5。正文内容零改动（只插入编号，不改写、不重排、时间戳不变）；编号顺序 = 活跃文件在前、归档在后、文件内按行序。
+
+### 变更（Visitors 徽章更名 Visits/day (14d)：alt 文本与 xhqing 集中统计新 label 对齐）
+
+- **为什么改**：用户要求（2026-08-17）访问量徽章名需表达「最近半月日均访问量」口径——xhqing 集中统计侧的 badge JSON label 已从 `Visitors` 改为 `Visits/day (14d)`（`Visits/day` 是 shields.io 表达日均的惯例写法、`(14d)` 标注 14 天滚动窗口），各仓 README 的徽章 alt 文本同步对齐，避免 alt 与徽章实际显示文字脱节。
+- **改了什么**：README 徽章区 `alt="Visitors"` → `alt="Visits/day (14d)"`，仅改 alt 文本，endpoint URL、数据源、徽章口径均不变（口径改动记 xhqing 仓库 CHANGELOG，本仓只改 alt）。
+
+### 变更（Visitors 徽章 alt 文本首字母大写：README 访问量徽章命名统一）
+
+- **为什么改**：用户指令（2026-08-16）「Visitors 徽章全局统一，首字母大写」——配合全局 `~/.claude/CLAUDE.md`「徽章英文首字母必须大写」新规，集中统计上线时挂的访问量徽章 `alt="visitors"` 为小写存量，与 badge JSON label（`Visits/day`）及大写规范不一致，本次一次收口。
+- **改了什么**：README（EN/CN）徽章区 visitors 徽章 `alt="visitors"` → `alt="Visitors"`，仅改 alt 显示文本，endpoint URL 与数据源不变。
+
+### 变更（README 徽章英文首字母大写：license / focus / markets / visitors 改首字母大写）
+
+- **为什么改**：用户立规（2026-08-16，写入全局 `~/.claude/CLAUDE.md`）——README 徽章英文小写首字母观感不一致，首字母大写是英文标识词的标准书写规范；本仓库存量徽章顺手全量修正。
+- **改了什么**：README.md / README_cn.md 各 3 处徽章 URL——`license-MIT` → `License-MIT`、`focus-quant%20strategies` → `Focus-Quant%20strategies`、`markets-HK%20%2F%20US` → `Markets-…`；`alt="visitors"` → `alt="Visitors"`。URL 指向与数据源不变，仅改显示文字。
+
+### 新增
+
+- **纯价格特征对比实验：订单流特征无实质增量，实盘无需付费数据（2026-08-16，重要）**：为回答「4 个订单流特征（ofi/flow_large/nb/avg_size）盘中获取需 Databento Live 实时订阅（$179+/月），能否去掉」，给 `common_wf.py` 的 `build_nonoap` 加 `price_only` 参数、`train.py`/`test.py` 加 `--price-only` 开关（模型固化到 `models/wf_H6_priceonly/`，与全特征版隔离），同口径 walk-forward 28 窗口对比。**结果：纯价格 11 特征 vs 全特征 15 特征——AUC 0.590 vs 0.587、AUC 正窗口 27/28 vs 25/28、净R（=收益率）+0.003 vs +0.003——edge 基本不变**（差异在噪声范围，结论是订单流无实质增量，不是纯价格更强）。实盘含义：模型 edge 主要来自价格/量特征（分钟动量/波动率/量比/价格冲击/时段），**分钟 K 富途 OpenD 免费实时可得且与训练数据（mbo 聚合分钟 OHLCV）口径一致（价格就是价格，无订单流特征的数据源口径漂移问题），实盘数据成本从 $179/月降为 0**。与早期 ml_trend（纯价格 AUC 0.52 无 edge）不矛盾——差异在时间尺度：15m K 预测 3~24 小时无 edge，分钟级预测 6 分钟有 edge（分钟级惯性在极短窗口存在，拉长被噪声淹没）。
+- **训练/测试解耦：`train.py` + `test.py` + `common_wf.py`（2026-08-15）**：按用户要求把 walk-forward 的训练与测试拆开——`train.py` 滚动窗口训练并把每个模型固化为 LightGBM 原生 txt（`models/wf_H<H>/window_N.txt` + `meta.json` 记录窗口切分/超参数/样本数）；`test.py` 载入固化模型测试，改止损宽度无需重训（`--stop-atr` 任意换），并校验数据样本数与窗口切分和训练时一致（数据漂移即报错提示重训）；共用逻辑（数据加载/ATR/不重叠采样/窗口切分）抽到 `common_wf.py` 保证口径一致。验证：载入模型测试的 AUC 0.587 与原 walk_forward_r.py 完全一致。`models/` 已加 .gitignore。
+- **无止损时 R 口径定稿：双向 risk = entry price（2026-08-15，用户定义）**：`test.py` 的 `--stop-atr 0` 分支由「risk 硬编码 1.0（无交易学含义）」改为**双向 risk = entry price**——做多止损在 0（跌 100%）、做空止损在 2×entry（涨 100%），对称；R 退化为以 entry 归一的收益率，**与收益率统计口径严格相等**（实测验证：无止损 R=+0.003 ↔ 收益率口径 +30 bps 吻合）。中间曾按「做多 risk=entry、做空 risk=∞」实现，做空 R≈0 贡献消失；用户定稿为双向对称口径。结论：**收益率是 R 在 risk=entry 下的特例**。
+
+## [0.1.0] - 2026-08-10
+
+### 新增（README 访问量徽章——舰队集中式访问统计）
+
+- **为什么改**：全舰队上线集中式「真去重」访问统计（图片徽章方案无法去重，走官方 Traffic API 路线）：统计集中部署在 xhqing 仓库（`scripts/update_traffic.py` + 每日 GitHub Action），各 fleet 仓库只需在 README 挂徽章、零运行负担。
+- **改了什么**：README（EN/CN）徽章区新增 visitors 徽章（shields.io endpoint 指向 `xhqing/xhqing` 仓库 `traffic/badges/<repo>.json`，由每日采集的官方 Traffic API 数据更新）。徽章数字含义：按日去重访客的累计（GitHub 只提供每日 uniques，跨天不去重），自 2026-08-16 起累计。
+
+### 新增
+
+- **A 股跨境 ETF 数据接入 + 日内 T+0 可行性验证（2026-08-08）**：
+  - **data.py 支持 A 股市场**：`symbol_normalize` 市场白名单扩至 `SH` / `SZ`（前缀格式，与 HK/US 同构），`MARKET_TZ` 加 `Asia/Shanghai`（+08:00，满足时区铁律）；长桥后缀格式仍限 HK/US（长桥无 A 股）。
+  - **三个 A 股跨境 ETF 全量落缓存**：`SH.513050`（中概互联）/ `SH.513100`（纳指）/ `SZ.159920`（恒生），各 38.5 万根 1m（约 5.5 年，2021-01 起，深度与港美股一致），5m/15m/DAY 同步落地。原因：用户决定推进 A 股日内 T+0（跨境 ETF + 港股通标的），数据是前提；实测发现**富途 OpenD 直接提供 A 股 ETF 分钟 K——数据源问题就地解决，无需 QMT**（QMT 需 Windows + 券商账号 + 资金门槛，此前已调研暂缓）。
+  - **可行性验证结论**（tmp/t0_feasibility.py，5.5 年日振幅 vs 交易成本）：所有标的振幅远大于成本——港股通标的腾讯/阿里 2.6-2.7%、美团 3.99%（成本 0.22%/趟）；A 股跨境 ETF 中概互联 1.80%、恒生 1.31%（成本仅 0.05%/趟，免印花税），振幅/成本倍数 26-36×；**纳指系 513100 仅 0.67%**（A 股时段美股休市、盘中波动小）暂排除。路线定案：主攻恒生系/中概系跨境 ETF（成本优势 4 倍+），港股通标的做抓大波段（波动大但成本高）。
+  - 待办与决策详见 `TODO.md`（A 股日内 T+0 方向节）。
+- **项目脚手架 0.1.0（2026-08-03）**：项目初始版本。内容：quant skill（`SKILL.md` / `README.md` / `schema.md` / `data-sources.md`）、中英双语 README（含 logo 与标准徽章）、MIT LICENSE、项目级 CLAUDE.md、`.claude/settings.local.example.json` 模板。原因：Markowitz 量化策略 agent 项目的初始化落地，为「设计可回测策略 → 历史回测标定可信度 → 交付 Victor 当加权投票员」提供可复现的代码与规范底座。
+- **数据层 `data.py`（2026-08-03）**：quant skill 的数据底座——富途 OpenD K 线拉取（分钟 K + 日 K）、parquet 本地缓存（含市场时区，`data_cache/` 已 gitignore）、增量更新（按本地最后时间起步、去重合并）、快照备份（按市场打包 tar.gz + manifest SHA256，`snapshot` 命令）与恢复（`restore` 命令，下载校验解压）。原因：量化回测需要确定性数据底座（同快照 → 同结果），且用户担心免费数据源（富途 OpenD）后续不可免费获取，需备份一份到云端。
+- **私有备份仓库 `xhqing/market-data-backup`（2026-08-03）**：行情快照备份专用私有仓库，按快照 tag 挂 GitHub Release（`snapshot-2026-08-03` 已发布：HK 34MB + US 58.5MB + manifest，共 340 万根 K 线、110MB）。原因：数据快照版本化异地备份，防数据源失效；私有自用，遵守行情数据再分发授权边界。
+- **股票池首版（2026-08-03）**：`data.py` 内置 5 个标的——港股 `HK.02800/00700/09988` + 美股 `US.SPY/QQQ`。原因：MVP 验证链路用；正式池子按流动性排名规则扩充（预定义、防幸存者偏差）。
+- **README 图片化展示（2026-08-06）**：新增三张对外展示图并嵌入两版 README——① `assets/markowitz_workflow.svg` 工作流架构图（设计 → 回测 → 标定 → 交付，品牌靛蓝渐变与 logo 同源）；② `assets/performance.png` 方案1 业绩图（累计净 R 权益曲线 / 按年净 avg_R / 按标的净 avg_R / R 分布四联图）；③ `assets/backtest_example.png` 回测机制示例图（TSLA 日 K 一笔真实交易：信号 → t+1 开盘进场 → trailing 止损出场 → R=+2.39，用真实缓存 K 线绘制）。原因：项目 README 原只有 logo 无图表，「agent 如何工作」与「已交付策略的业绩」缺少直观呈现，对外展示（开源页面）说服力不足。业绩图数据来自复现方案1 回测（37 美股日 K，2086 笔、净 avg_R +0.251R、g@2% +0.444%/笔、胜率 40.8%、34/37 标的正 g、18/21 年正），与 CHANGELOG 既有记录逐项一致（2026-08-04 全美股扩充条目）。
+
+### 变更
+
+- **策略目录命名简化 `quant-swing/` → `swing/`、`quant-intraday/` → `intraday/`（2026-08-10）**：项目根两个策略目录改名。原因：用户立「文件命名规范」——名字须为英文、尽量简单、去与上下文重复的冗余修饰词；`quant-` 前缀与项目名 QuantStrategistAgent 重复（项目本身就是量化策略项目），删后 `swing` / `intraday` 语义依然清晰（波段 / 日内，均为交易术语）。改动：目录改名（普通 mv，工作区操作）；同步更新全部路径引用——两版 README（3 处链接 / 反引号引用）、`.gitignore` 的 `intraday/data_tick/` 忽略路径、`swing/` 内自引用（README 标题 / 快速开始 / CLI 表 / 目录树、STRATEGY.md 运行方式、三个 CLI docstring）、`intraday/` 内自引用（README 标题与说明）。顺带修正两处既存失效引用（非本次引入，系历史遗漏，一并修）：① `swing/README.md` / `STRATEGY.md` / `check_signal.py` docstring 里演示的 `signal.py` 命令——该文件已于 2026-08-05 改名 `check_signal.py`（见下方同日条目），文档未同步，命令跑不通；② `intraday/analyze_flow.py` docstring 的「数据：quant-swing/data_tick/...」——数据实际在本目录 `data_tick/`（原引用指向不存在的路径）。CHANGELOG 历史条目中出现的 `quant-swing` 为当时事实记录，保留原名不改。
+- **commit skill 缓存文件名简化 `.commit-skill-cache.md` → `.commit-cache.md`（2026-08-10）**：项目根缓存文件改名。原因：用户立「文件命名规范」——文件名一律用英文命名、且用尽可能简单的名字（去冗余修饰词），`skill` 属冗余；全局 commit skill 已同步改读新文件名，本文件内容不变、检测状态不丢。同批动作（全局 CLAUDE.md 新增命名规范小节、各 agent 项目同名缓存文件一并改名）详见 CapabilityManagerAgent 的 CHANGELOG。
+- **README「当前阶段」同步实际进度（2026-08-06）**：两版 README 的「Current Stage / 当前阶段」由「MVP 阶段、第一个策略是下一步交付物」（2026-08-03 文案）改为「已越过 MVP：schema / 回测引擎 / 数据层就位，日 K 趋势跟随策略已交付（`quant-swing/`，含 check_signal / backtest / analyze 三个 CLI）」，并如实列出已证伪方向（日内分钟 K 系统性证伪）与下一步（扩充标的池、跟踪实盘信号、持续复验）。原因：原文案与项目实际进度严重脱节——项目已走完「日内探索 → 系统性证伪 → 日 K 突破 → 严格验证 → 交付」全过程（见下方 2026-08-03~05 各条目），README 若继续写「MVP 待交付」会误导对外读者、与仓库实际内容（quant-swing/ 已存在）自相矛盾。防回归检查：本次只改现状描述，未触及任何已解决问题的逻辑，与 2026-08-03「quant skill 进度标注更新」同为「进度同步」纪律的延续。
+- **删除项目级 `.claude/rules/` 三个通用规范副本（2026-08-03）**：`verify-before-report.md` / `file-operation-priority-rules.md` / `tmp-dir-for-artifacts.md` 与全局 `~/.claude/rules/` 同名文件逐字节重复，而这三条规则每次会话由全局配置自动加载、实际生效来源是全局——项目副本纯属冗余维护负担，且会随全局规则演化而分叉过时。改动：删除 `.claude/rules/` 整个目录；CLAUDE.md「工作规则」段由三行 `@.claude/rules/...` 引用改为说明文字（规则由全局提供，clone 者可从 CapabilityManagerAgent 仓库的 `.claude/rules/` 获取权威副本）；两版 README 目录树去掉 `rules/` 块，第 19 行「skills 和 rules 塑造」改为「skills（外加用户的全局 rules）」。
+- **quant skill 进度标注更新（2026-08-03）**：`SKILL.md`「当前阶段」与 `README.md` 目录树中 `data.py` 由「MVP 待写」改为「已就位」，并更新下一步为「写 `backtest.py` + 最简分钟策略 → 回测 → 泛化测试（train/test 切分、参数敏感性、随机基线）→ 盘中对照」。原因：数据层已交付，进度标注随之同步，避免文档与现状脱节。
+- **回测驱动器 `backtest.py` + 第一个策略（2026-08-03）**：新增 `backtest.py`（回测引擎：读缓存 → 逐根喂策略 → 内置出场 → 算 R → 类别统计 → confidence 表 + 泛化测试 train/test / 参数敏感性 / 随机基线）与 `strategies/trend_breakout.py`（5m 动量突破：收盘创新高 + 放量）。原因：实现 schema 第四节回测设计，让策略可被回测标定；用第一个简单策略「逼」出框架形状。修了 4 个回测口径 bug：① 未来函数（信号 t 收盘后产生必须 t+1 开盘成交，原实现用信号根开盘价成交，毛 avg_R 虚高 0.57→真实 0.08）；② 出场价保守端（min/max(close, 触发价)，原取触发价导致 R 分布失真）；③ 时段约束（收盘 K 不能进场，原 16:00 进场 116 次）；④ risk 下限（低波动品种止损过近 → R 爆炸 ±40，跳过 <0.3% 风险交易）。第一个策略回测：盈富 5m 净 avg_R 0.027（微正）、SPY 净 -0.015（负）——扣成本后基本无 edge，有待迭代。
+- **交易成本按市场分开设（2026-08-03）**：`backtest.py` 的 `cost_bps` 由「默认 2bps/边」改为按标的所属市场自动取——港股 18（含印花税买卖各 0.13% 是大头 + 佣金 + 滑点）、美股 3（零佣金券商 + 滑点）；可用 `params={"cost_bps": X}` 显式覆盖。原因：此前默认 2bps 未算港股印花税，严重高估港股策略——同一盈富 5m 动量策略净 avg_R 从 +0.027 暴跌到 −0.423（从微正变每笔大亏），SPY 从 −0.015 到 −0.048。港股印花税是日内高频策略的致命成本，必须如实计入，否则回测失真。同步更新 `schema.md` 4.4 成本口径说明。
+- **回测主循环重构为状态机 + 三项进出场机制 + 双优化目标（2026-08-03）**：
+  - **状态机模型**：`run_backtest` 由「每信号独立一笔（允许重叠持仓）」重构为「同时最多一仓」的状态机。原因：原模型允许同时间多笔重叠持仓，统计虚高（盈富 trend_breakout 胜率从虚高 59% 降到真实 41.6%，且 41.6%×1.5 盈亏比与净 avg_R 数学自洽）。
+  - **① 止损价基于成交价反推**：止损/止盈价改为基于实际成交价（t+1 开盘价）`stop = entry ∓ stop_atr×ATR` 反推，而非信号根开盘价——risk 干净等于 `stop_atr×ATR`。修原来「进场价 vs 信号根止损」基准不一致的不严谨点。
+  - **② 移动止损（trailing）**：`trail_atr>0` 时止损随价格有利方向移动、只朝有利方向不回退（用 ≤ i−1 数据更新，无未来函数）。默认关闭（`trail_atr=0`）。实测盈富 trailing=2.5 让 std_R 1.600→1.356（更稳）但 net avg_R −0.782→−0.823（略差）——正是双目标的权衡。
+  - **③ 反向信号平仓**：`allow_reverse_exit=True` 时持仓中出现反向信号则 t+1 开盘平。默认关闭。用 dummy 多空策略验证真触发（开启后交易数 4423→4473）。
+  - **双优化目标**：由单一 `avg_R` 改为 `net avg_R`（最大化）+ `net var_R`（最小化）双目标。`BacktestResult` 加 `var_R`/`std_R` 属性；`net_avg_R` 改逐笔算法（每笔扣自身成本）。`schema.md` 4.0 改双目标、4.5 出场条件补全。
+  - **修 risk 爆炸 bug**：`Trade` 显式存进场固定 `risk`（= `stop_atr×ATR`），`net_R`/`confidence_table` 用它而非 trailing 后的 stop——否则 trailing 紧贴 entry 时 `|entry−stop|→0`、成本 R 爆炸到天文数字（−31300708151）。
+- **优化指标改为凯利对数增长率 g（2026-08-03）**：主优化目标由「net avg_R + net var_R 双目标」改为单一指标 `g = E[ln(1+f·net_R)]`（每笔对数增长率，凯利框架核心）。原因：g 把净平均赔率（EV=net avg_R）与净赔率方差（σ²=net var_R）数学上统一成单一实数——`g ≈ f·EV − (f²/2)(σ²+EV²)`，第一项均值贡献正向、第二项方差惩罚负向；双目标无全序（帕累托权衡难决策），g 是全序实数可直接排序，且 g>0 才有复利（比 EV>0 严格得多）。推导依据 [DayTradingAgent/notes/cumulative-return-derivation.md](https://github.com/xhqing/DayTradingAgent/blob/main/notes/cumulative-return-derivation.md)。改动：`BacktestResult` 加 `log_growth(f)`（精确 g，默认参考 f=2%）与 `f_star()`（近似凯利 EV/E[R²]）属性；CLI 输出 g 为主指标、EV/σ/f* 为诊断；数值自检对齐文档 9.2（p=0.55/RW=1.5：EV+0.380、f*+22.5%、g@2%+0.727%/笔，文档 +0.375/22%/+0.72%）。`schema.md` 4.0 改为单目标 g，net avg_R/var_R/std_R 降级为 g 的诊断成分。盈富 trend_breakout 实测 g=−1.628%/笔、f*=−24.6%（无 edge，诚实反映策略不可行）。
+- **策略系统性证伪 + 第二个策略 mean_reversion（2026-08-03）**：新增 `strategies/mean_reversion.py`（RSI 超卖做多/超买做空，与动量相反的均值回归逻辑）与 `add_indicators` 的 RSI 指标。对两个相反逻辑在全股票池 × 5m/15m × 参数网格（含 train/test）回测，**全部 g<0、无 train+test 双正稳健组合**。根因诊断（毛 EV vs 净 EV）：两个策略毛 EV 全部 ≈0（−0.09~+0.04R），即指标在 5m/15m 上无预测力（弱式有效市场），成本只把「≈0」压成负（港股印花税侵蚀 0.5-0.8R、美股 0.1-0.14R）——失败根因是「指标无预测力」而非「被成本拖累」，调参救不了。trend_breakout 在 QQQ 15m 有 5 组 test g>0 但 train g 全负，是时间过拟合假阳性，g 框架 + train/test 正确拦截。结论记入 `SKILL.md`「系统性证伪结论」节（含适用边界，防过度泛化、防重蹈覆辙）。方向待定，不盲目试第 N 个单指标策略。
+- **多因子突破：盈富 15m 顺势深回踩（2026-08-04，第一个真实 edge）**：选方向 A（多因子），新增 `strategies/multi_factor.py`（趋势过滤 MA + RSI 回踩 + 放量确认，三因子 AND）与 `add_indicators` 的 MA/slope。原因：单因子毛 EV≈0，顺势+深回踩+放量组合争取把毛 EV 做到 > 成本。结果在盈富 15m 找到统计显著 edge（推荐配置 ma15/os30/vol1.0/stop2/take3/hold48）：全样本 n=43、胜率 62.8%、毛 EV +0.867R、g=+0.333%/笔（符合实盘止损口径，见下条修正）、f*=+10.2%；train/test 双正（test g +0.375% 高于 train）；**按年 2020-2026 共 7 年全部毛 EV 为正**（+0.23~+1.59，p≈0.008）；关键规律是 edge 来自「深度 RSI<30 + 顺势」稀缺组合，浅回踩（os≥35）样本多但 g 转负。限制：单标的特例（同参数跨标的只盈富有 edge，腾讯/阿里/美股 ≈0 或负，不泛化）、样本少（43 笔、test 10-15），故仅作 Victor 低置信度加权输入。同步给 `backtest.py run` 加 `--params` JSON 透传（调参结果可复现）。结论记入 `SKILL.md`「多因子突破」节。
+- **修正出场价口径为符合实盘止损止盈单行为（2026-08-04）**：`_exit_check` 由 `min/max(close, stop)` 改为「跳空开盘越过触发价→exit=open（真穿透）；盘中触及→exit=stop/take（止损止盈单在触发价成交，R=−1/+盈亏比）」。原因（用户指出）：实盘止损单是市价单、盘中数据粒度远小于 K 线周期，触及触发价即成交、不等收盘；此前 close 口径把「盘中触及但收盘更差」当穿透，止损端高估亏损、止盈端高估盈利（冲高取更高 close）。修正后盈富 multi_factor 的 g 从 +0.727% 回归 +0.333%（止盈端美化被去除），但 edge 稳健性不变（7/7 年正、train+test 双正仍成立）。`schema.md` 4.5 出场价口径同步更新，含精度边界说明（判断「是否触及」用回测 ktype 的 K 线，更精确需 1m/tick 级数据）。
+- **日内固定止盈止损模式定稿 + 禁跨段摧毁 edge（2026-08-04）**：经多轮迭代定稿出场逻辑——① **固定止损/止盈**、成交价恒定 = stop/take（市价单触及即成交）；② **日内禁跨段**：新增 `_is_session_end` + 段末强制平仓（持仓到午休前港股 12:00 / 收盘前 16:00 用收盘价强平，不过午休不过夜）；③ 去掉 trailing/反向信号（实测纯 trailing 在盈富 15m g 全负，趋势延续性不足）。原因：用户明确日内交易禁跨午休隔夜、止损成交价固定为触发价。**结果（重要负面发现）**：multi_factor 盈富 15m 在禁跨段约束下 edge 消失——所有 stop/take 参数组合 g 全负（−0.26%~−2.0%），最佳 stop=2/take=3 也只 g=−0.260%（vs 允许跨段 +0.333%）。根因：段末强平笔 R 均值 +0.331（浮盈未到 take），禁跨段让盈利兑现不充分（停在 +0.33R 而非等到 +1.5R），叠加港股 18bps 印花税压成净负。诚实结论：该策略的 +0.333% edge 依赖跨段持仓（本质短周期波段），纯日内约束下无 edge，不交付 Victor。`schema.md` 4.5 改为日内固定止盈止损模式定稿；`SKILL.md` 加「日内禁跨段约束摧毁 edge」节。
+- **转方向 B（日 K 波段）+ 适配框架（2026-08-04）**：日内方向耗尽后转日 K 波段。框架适配：`_allow_entry` 对 `ktype=="DAY"` 放行（日 K 次日开盘成交、无盘中时段约束；分钟 K 才受开盘/尾盘约束）。探索结果：① multi_factor 的「顺势深回踩」在日 K 不成立（上升趋势中 RSI<30 极罕见，三条件 AND = 0 次）；② trend_breakout 日 K 固定止盈 g=+0.041%（微弱）；③ **trailing 让利润奔跑显著提升 g（+0.041%→+0.826%）**，最大 R 从 +1.5 飙到 +5.7（捕捉大趋势）——印证日 K 趋势延续性强、trailing 优于固定止盈（与日内相反）。但单标的（盈富 6.4 年）稳健性验证失败：按年仅 4/6 年正、train −0.058% vs test +3.775%（时间过拟合）。根因：单标的样本太少（13 笔），trailing 放大少数大胜致 g 由一两笔决定。
+- **扩样本池 + 趋势跟随稳健 edge 突破（2026-08-04，里程碑）**：单标的样本不足是根因，故扩样本。改动：① `STOCK_POOL` 从 5 扩到 23 标的（港股 13 大盘股 + 美股 10 科技/ETF）；② `fetch-all` 加 `--ktype`（只拉指定周期）+ `--force`（全量重拉向前扩历史）；③ `_fetch_range` 日 K 起点从 `2020-01-01` 改为 `2000-01-01`（富途日 K 可到 2006，~20 年；分钟 K 仍 2020 起）。结果日 K 从 6.4 年（~1620 根）扩到 ~20 年（4930-5039 根），翻 3 倍。
+  - **trend_breakout 日 K + trailing 在 23 标的 × 20 年上展现稳健 edge**：池化 1305 笔、g=+0.501%/笔、EV净=+0.282R；18/23 标的 g 正（趋势型标的强：TSLA +1.60%、NVDA +1.26%、AAPL +1.12%、港交所 +1.19%；防御/区间标的负：长和/海油/友邦——趋势跟随在震荡股失效，合理）；按年 21 年里 16 年池化 g 正（负年份仅 2008 金融危机、2011 欧债等震荡市，趋势跟随已知弱点）；**参数稳健**（trail_atr 2-5 池化 g 全正、正年数 14-17/21，参数高原非孤峰）。
+  - 三重验证（跨 23 标的 + 21 年按年 + 参数稳健）确认非过拟合。诚实标注：是"固定参数三重验证"，非严格 train→test 调参 walk-forward，但参数稳健性大幅降低过拟合风险。这是 Markowitz 第一个可交付 Victor 的稳健策略（趋势跟随：trend_breakout + trailing 日 K）。`SKILL.md` 更新「方向 B」节为突破结论。
+- **修正跳空建模 + g 订正（2026-08-04）**：`_exit_check` 由「日内 A 方案恒定 stop/take（R 恒 −1）」改为「跳空 open / 盘中 stop」口径——当根开盘跳空越过触发价则用 open（真实穿透 R<−1），否则 stop/take。原因（用户指出）：日 K 波段持仓隔夜，开盘跳空是真实风险（止损单市价、跳空开盘成交更差），此前恒定 stop 美化了。该口径对日内也正确（禁跨段时 open 不越过 stop，等价恒定）。结果：23 标的日 K 池化 g 从 +0.501%（美化）订正到 **+0.406%（真实）**，77/1305 笔（5.9%）跳空穿透、最差 −7.84R；正 g 标的从 18/23 降到 17/23（阿里 HK.09988 翻负 +0.078%→−0.076%，疑样本噪声，仅 6.5 年/27 笔）；edge 仍在（g 正）。实盘跳空处理：仓位 f 控制（最差 −7.84R 决定 f 上限——f=2% 单笔 −15.7% 致命，分数凯利 f≈1-1.7% 可承受）+ 多标的分散稀释 + 期权对冲（成本高）+ 事件前减仓。`schema.md` 4.5 + `SKILL.md` 趋势跟随节 g 同步订正。
+- **全美股扩充 + 严格 walk-forward 终极验证（2026-08-04）**：`STOCK_POOL` 美股 10→37（覆盖七大行业）。全美股趋势跟随（跳空建模版）池化 2086 笔、g=+0.444%/笔、正 g 标的 34/37（92%）、按年 18/21 正——优于混合池（成本低 + 趋势型标的多）。严格 walk-forward（train 5 年网格选参 trail×stop 6 组合 → test 1 年只验证一次，15 窗口 2011-2025）：**平均 test g +0.443% = 全样本 +0.444%（零衰减）**、10/15 年正。零衰减是"无过拟合/无参数选择泄漏"的最核心证据；5 个负 OOS 年全是结构性坏年份（2011/2012 欧债、2014/2019 震荡、2022 熊市），趋势跟随 ~1/3 年份亏钱是机制代价。四重证据（跨 37 标的 92% + 按年 18/21 + 参数稳健 + walk-forward 零衰减）全过，**Markowitz 第一个可交付的稳健策略**。`SKILL.md` 加「全美股扩充 + walk-forward 终极验证」节。
+- **海龟式主动离场对比测试：被动 trailing 更优（2026-08-04）**：新增框架可选能力 `turtle_exit_bars`（做多收盘跌破过去 N 日最低价即主动离场，趋势反转确认）并对比测试。结果（全美股 37，跳空建模版）：被动纯 trailing g=+0.444%/34/37 正标的最优；加海龟 20 日 +0.431%/33/37、加海龟 10 日 +0.357%/32/37——**主动离场反而降低 g 和正标的比例**。原因：海龟离场把强趋势的正常回调（20 日低点回踩常见）误判为反转，过早砍掉利润，且频繁离场被"震出去"的累积损失 > 震荡市避险收益。数据印证趋势跟随哲学：**不要主动预测趋势结束，让 trailing（回撤 3×ATR）自己决定**。定案：保持被动 trailing（`turtle_exit_bars=0` 默认关），海龟离场保留为框架可选能力但不启用。
+- **日 K 方案固化：daily_k/ 目录 + 四方案对比文档 + 自动检测信号脚本（2026-08-05）**：新建 `quant/daily_k/` 目录，内容：① `README.md` 完整技术文档——四方案（只做多 37 / 多空 37 / 只做多 43 含低相关 / 多空 43 含低相关）统一口径对比（全历史 ~20 年、trail=3、跳空建模、美股 3bps），信号/执行/止损/平仓逻辑（含 Latex 推导）、泛化测试四方法原理、指标含义、仓位管理（分数凯利 ~1.7%）；② `scripts/signal_check.py` 自动检测信号脚本（只读无副作用，已测试）。**四方案结论**：推荐方案1（只做多 37，g+0.444% 最高、月std 19.63% 最低、最差月 −20.75% 最浅）；方案2/4 多空月胜率 65%/63% 但波动翻倍（36-38%）；方案3 加低相关削危机月尾（2020-02 从 −3.64% → +13.22%）但 g 略降。统一口径数据已写入文档 §6 表格。
+- **日内时段效应测试：存在但经济上不可交易（2026-08-05）**：统计 43 美股 15m（2021-2026）各时段收益分布。结果：10-11 时 +0.42bps（t=5.31）、14-15 时 +0.14bps（t=3.27）、11-12 时 +0.12bps（t=2.23）统计显著正，但**量级 0.42bps << 单边成本 3bps（7 倍）**，且所有时段胜率 50%（均值显著但方向概率不显著，t 显著因样本 28 万根）。**结论：日内时段效应存在但经济上不可交易**——进一步确认日内无可用 edge（连"免费信息"时段效应都撑不起成本），日 K 是唯一有效尺度。
+- **策略交付从「给 Victor 协作」改为「用户单独使用」+ 内容移到项目根（2026-08-05）**：用户明确不需要考虑 Victor 协作，把开发出的日 K 趋势跟随策略作为单独使用的策略交付。改动：① 项目根新增 `日K趋势跟随策略.md`（用户版完整文档：信号/执行/止损/平仓/仓位管理/历史表现/已证伪方案/局限，去 Victor 协作）；② 项目根新增 `日K检测信号.py`（自动检测信号，默认全池 37 只，自动补 US. 前缀，已测试）；③ 删除 skill 内的 `daily_k/` 目录（内容已移到项目根，skill 只留 SKILL.md 进度规范）；④ 重新生成 `confidence_table.json`（方案1 只做多 37 美股池化口径：vol2x n=838 胜率 43.7% avg_R+0.351 / vol1.5x n=1248 胜率 39.3% avg_R+0.211——放量越猛信号越强）。
+- **策略工具迁到 quant-swing/ 目录（2026-08-05）**：按用户要求，策略内容移到项目根新建目录 `quant-swing/`（英文文件名，内容中文），并开发完整 CLI 工具。结构：`README.md`（项目说明/快速开始/CLI 一览/风险提示）、`STRATEGY.md`（策略完整文字版）、`common.py`（共享：标的池/参数/数据加载，三个 CLI 的唯一接缝，复用 quant 引擎保证口径一致）、`check_signal.py`（检测信号 CLI，原 signal.py 因与 Python 标准库 signal 命名冲突改名）、`backtest.py`（回测 CLI：--scheme 1-4 / --all / 自定义标的模式）、`analyze.py`（数据分析 CLI：monthly/hold/yearly/symbols/worst-month/gap/signal-day 七个子命令）。全部 CLI 已实测（数据与之前验证一致：方案1 g+0.444%、月std 19.63%、月胜率 54%）。删除项目根中文文件（日K检测信号.py / 日K趋势跟随策略.md，内容已迁入新目录）。
+- **回答：量化日内无 edge 是否意味着 Victor 主观日内也无 edge（2026-08-05）**：逻辑推演结论——**不必然，但有三道客观约束**。量化证伪的是"仅用 K 线 OHLCV 的日内量化"（弱式有效），不是"日内交易"；主观交易可用价格之外的信息（盘口/资金流/新闻/情绪，无历史数据无法回测）。但量化结论确立三条客观事实：① 纯价格信息日内无预测力（已证明）；② 日内成本客观致命（时段效应 0.42bps << 3bps）；③ 主观 edge 无法验证（无历史数据，既不能证实也不能证伪）。Victor 若有真实非价格信息优势且覆盖成本则可能有 edge（无法验证），若核心依据是价格形态则大概率无 edge。
