@@ -1,5 +1,8 @@
 # Changelog
 
+> **历史记录（2026-11-08 起定格）**：本项目原为独立仓库，已并入 Mark 仓库成为 `Intraday/` 目录。此文件保留并入前的全部开发记录，**自并入之日起不再更新**——新的改动一律记仓库根 `CHANGELOG.md`。
+
+
 本文件记录 Intraday 每个版本的主要变更，格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。2026-09-13 前的条目为拆分前原 QuantStrategistAgent 项目所记，保留原貌不改。
 
 ### 新增（CI 门禁：validate 检查 + main 分支 strict 保护）

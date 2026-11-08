@@ -66,16 +66,35 @@ Mark 的核心产物是**量化策略代码 + 回测标定的可信度查表**�
 
 > 事实性 / 数值性结论先验证再陈述（实体归属、算术、日历、API 字段、费率），禁止把推测当事实——这条是量化工作的底线：策略代码里的每一个数值都必须有据可查、可复现。
 
-## 子项目清单（智能体专属文件归属，2026-10-30 修订）
+## 仓库结构：三个研究目录（2026-11-08 起）
 
-本项目（Mark）负责维护以下子项目（与全局 `~/.pi/agent/docs/agents-registry.md`「子项目映射」表保持一致）：
+三个研究项目原先各占一个独立仓库（`xhqing/Intraday`、`xhqing/Swing`、`xhqing/gridtrader`）。**2026-11-08 起三者并入本仓库成为三个目录**，不再各自占仓库；三个 GitHub 远端仓库保留为存档，原仓库的提交历史已随并入保留在本仓库 git 历史里。
 
-- **QuantStrategistAgent（Mark）→ Intraday**：日内尺度策略研究（订单流 mbo 特征、分钟级 ML 信号、walk-forward 验证、执行口径模拟）。
-- **QuantStrategistAgent（Mark）→ Swing**：独立仓库 [xhqing/Swing](https://github.com/xhqing/Swing)，日 K 趋势跟随策略工具集（美股大盘股，Python，完整文档 + 回测验证 + 可信度标定）。
-- **QuantStrategistAgent（Mark）→ gridtrader**：独立仓库 [xhqing/gridtrader](https://github.com/xhqing/gridtrader)，网格交易策略开发及回测工具（Python / backtrader，Pipenv 管理依赖，`get_data_scripts/` 拉数据、`data/` 放样例数据）。
-- **QuantStrategistAgent（Mark）→ NewsScoreStudy**（`/Users/xhq/Developer/NewsScoreStudy`）：面试实操题研究仓库——评估「大模型给新闻打的分（-1~1）值不值得交易」（模拟数据、股票代码已匿名化、仅用于本次评估；Python 研究代码 + 可执行回测，交付 `PLAN.md` / `REPORT.md` / `NOTES.md`）。私有远程仓库 [xhqing/NewsScoreStudy](https://github.com/xhqing/NewsScoreStudy)。2026-10-26 由 Victor（DayTradingAgent）移交本项目负责（当时仅改归属、仓库仍在原路径）。
+| 目录 | 内容 | 该目录的专属规则 |
+|---|---|---|
+| `Intraday/` | 日内尺度策略研究（订单流 mbo 特征、分钟级 ML 信号、walk-forward 验证、执行口径模拟） | `Intraday/AGENTS.md` |
+| `Swing/` | 日 K 趋势跟随策略工具集（美股大盘股，完整文档 + 回测验证 + 可信度标定） | `Swing/AGENTS.md` |
+| `gridtrader/` | 网格交易策略开发及回测工具（Python / backtrader / Pipenv） | `gridtrader/AGENTS.md` |
 
-按 2026-10-30 全局规则「智能体专属文件归属与子项目映射」（细则见 `~/.pi/agent/docs/agents-registry.md` 同名节，取代 2026-10-17 的「`.pi` 也挂软链接」）：智能体专属文件（`AGENTS.md`、`.claude/`、项目级 `.pi/`）的**实体只在本项目（Agent 项目）**；**各子项目（Intraday、Swing、gridtrader、NewsScoreStudy，及其 worktree `NewsScoreStudy-code-review`）根目录按两层处理**——① **身份层**：`AGENTS.md → ../QuantStrategistAgent/AGENTS.md` 软链接，必须与项目保持一致（pi 的上下文文件只从全局 + 祖先目录 + 当前目录加载，没有 include / 导入机制，做超集只能靠复制、复制必然漂移；且子项目里的会话仍是同一个 agent，身份本就不该分叉）；② **能力层**：`.pi/` 是子项目自己的**真实目录**（不再是软链接），`.pi/settings.json` 用路径把本项目的 `extensions` / `skills` / `prompts` / `themes` 四个资源目录引用进来，本地独有内容放子项目自己的 `./extensions` / `./skills` 等同名目录（`.pi/` 下这四个目录本来就会被自动发现、不必写进 settings）——行为上是超集，结构上无副本、不漂移，且子项目写自己的 `.pi` 不会污染本项目与兄弟子项目。链接与配置随仓库提交。**纪律**：子项目 `.pi` 只允许**追加**，不允许重述 / 覆盖基座规则；子项目专属**规则**用 `.pi/APPEND_SYSTEM.md` 追加（**不要用 `.pi/SYSTEM.md`**——那是整体替换，会把 Mark 的身份冲掉）。quant skill 权威源仍只在本项目 `.claude/skills/quant/`，不向子项目复制副本。**Leader / Worker 分工（2026-11-07 全局规则，取代 2026-10-17「只允许 Agent 项目根目录」）**：本项目根目录起的会话是 **Leader**（只做 local main 同步、建 worktree、派任务、收尾）；子项目根 / 子项目 worktree 起的会话是 **Worker**（干具体活并向 Leader 汇报）。通过 intercom / `agent_call` / `agent_wake` 指定工作目录时允许三类：Agent 项目根 / 已登记子项目根 / 子项目的 git worktree，启动带 `-a`。子项目专属硬规则写进各自的 `.pi/APPEND_SYSTEM.md`。详见全局 `~/.pi/agent/AGENTS.md`「Leader / Worker 分工」与 `~/.pi/agent/docs/agents-registry.md` 第 4 条。
+**动某个目录之前先读它自己的 `AGENTS.md`**：三个目录的硬约束各不相同（数据源与 data_cache 口径、label 用哪个价、参数调优纪律、依赖管理方式），规则写在各自那份文件里。嵌套的 `AGENTS.md` **不会被 pi 自动加载**（pi 只加载 cwd 与祖先目录的规则文件），所以这里必须显式指路。
+
+并入时的统一约定：
+
+- **版本号**：仓库根 `VERSION` 是唯一权威，三个目录不再各自持有 `VERSION`（并入时已删除。原值：Intraday 0.1.2、Swing 0.1.1、gridtrader 0.1.2；本仓库根当时为 0.1.1）。
+- **改动记录**：一律记仓库根 `CHANGELOG.md`；三个目录各自的 `CHANGELOG.md` 已定格为历史记录、不再更新。
+- **许可证**：仓库根 `LICENSE.md` 覆盖全部目录，子目录不再各带一份。
+- **CI**：只有一个仓库，走仓库根 `.github/workflows/`；原子仓库的 workflow 已随并入删除（GitHub 不会读子目录里的 workflow）。
+- **quant skill**：只有一份，实体在 `.claude/skills/quant/`（`.pi/skills` 是指向它的软链接），不向子目录复制。
+- **数据与产物**：`Intraday/intraday/{data_cache,output,models}/`、`Swing/engine/{data_cache,output}/`、`Swing/rotation/output/` 等一仍其旧地忽略，不入库。
+
+## Leader / Worker 分工
+
+本仓库并入三个目录后**不再有子项目仓库**：Worker 一律以本仓库的 worktree 为工作目录（Leader 用 `git worktree add ~/Developer/QuantStrategistAgent-<事项> -b <分支名>` 建好再派活）。
+
+- **Leader**（本仓库根目录起的会话）：同步本仓库 local main、按任务建 worktree、派任务、收尾（PR 合并后对齐 local main 并删 worktree）。
+- **Worker**（本仓库 worktree 起的会话）：只干 worktree 里的事，干完汇报（改了什么 / 验证结果 / PR 号 / 遗留问题），不碰 local main、不建删 worktree。
+
+详见全局 `~/.pi/agent/AGENTS.md`「会话间协作 · Leader / Worker 分工」。
 
 ## commit skill 检测缓存
 

@@ -1,5 +1,8 @@
 # Changelog
 
+> **历史记录（2026-11-08 起定格）**：本项目原为独立仓库，已并入 Mark 仓库成为 `Swing/` 目录。此文件保留并入前的全部开发记录，**自并入之日起不再更新**——新的改动一律记仓库根 `CHANGELOG.md`。
+
+
 ### 新增（CI 门禁：validate 检查 + main 分支 strict 保护）
 
 - **为什么改**：用户 2026-11-03 立规「新建仓库一律必须 strict 模式的 PR CI」，并要求 28 个不合规的存量仓库统一执行最新标准。本项目此前在 PR 上没有门禁——改动合进 main 全靠人工把关，PR 可以拿旧 main 上通过的检查直接合并，回归防护存在缺口。本次补齐团队要求的「三件套」：PR 上真实跑的 CI 检查 + 挂成 required status check + `required_status_checks.strict = true`。

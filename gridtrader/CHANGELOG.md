@@ -1,5 +1,8 @@
 # Changelog
 
+> **历史记录（2026-11-08 起定格）**：本项目原为独立仓库，已并入 Mark 仓库成为 `gridtrader/` 目录。此文件保留并入前的全部开发记录，**自并入之日起不再更新**——新的改动一律记仓库根 `CHANGELOG.md`。
+
+
 本文件记录 gridtrader 每个版本的主要变更，格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
 ### 新增（CI 门禁：validate 检查 + master 分支 strict 保护）

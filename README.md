@@ -15,7 +15,7 @@
 
 **Mark** is a personified AI agent dedicated to **quantitative strategy development** for Hong Kong and US equities, built on [Claude Code](https://claude.com/claude-code). It designs backtestable trading strategies as deterministic code, runs them against years of historical data to calibrate their credibility. Strategies are **developed independently** — no dependency on, and no delivery to, any trade-execution project.
 
-> This repository is the **main repository** (the agent project) of the Mark system: the agent's operating discipline (AGENTS.md), methodology, and open components. The active intraday research lives in the **[Intraday](https://github.com/xhqing/Intraday) sub-project repository** (see [Repository Landscape](#repository-landscape)).
+> This repository is the **main repository** (the agent project) of the Mark system: the agent's operating discipline (AGENTS.md), methodology, and open components. The active intraday research lives in the **`Intraday/` directory** of this repository (see [Repository Landscape](#repository-landscape)).
 
 ---
 
@@ -26,7 +26,7 @@ The edge comes from mathematical rigor that can be reproduced:
 - **Fully quantified output.** Every field is a number or a finite enum — no qualitative prose ("momentum weakening"). This is what separates quant from discretionary.
 - **Backtest-validated credibility.** A strategy does not grade itself; its confidence comes from historically measured win-rate / avg-R of its signal category.
 - **Pure functions, no lookahead.** Same bars + same params → same output, always. No future data leaks into a decision.
-- **Honest negative results.** Falsified ideas are documented, not buried — see the "already falsified" section of any strategy doc (e.g. [Swing's STRATEGY.md](https://github.com/xhqing/Swing/blob/main/swing/STRATEGY.md)).
+- **Honest negative results.** Falsified ideas are documented, not buried — see the "already falsified" section of any strategy doc (e.g. [`Swing/trend/STRATEGY.md`](Swing/trend/STRATEGY.md)).
 - **Walk-forward, multi-year validation.** In-sample means nothing; out-of-sample with zero degradation is the bar.
 
 <p align="center">
@@ -35,11 +35,15 @@ The edge comes from mathematical rigor that can be reproduced:
 
 ## Repository Landscape
 
-| Repository | Visibility | What it is |
-|---|---|---|
-| **[Swing](https://github.com/xhqing/Swing)** | public | Sub-project: day-K trend-following strategy — **complete documentation** (logic, params, 20-year × 37-stock backtest, honest caveats, falsified alternatives) |
-| **[gridtrader](https://github.com/xhqing/gridtrader)** | public | Sub-project: grid-trading strategy development & backtesting tool (Python / backtrader) |
-| [Intraday](https://github.com/xhqing/Intraday) | public | Sub-project: active intraday research (order-flow features, minute-level ML signals, walk-forward validation). |
+One repository holds the agent project **and** the three research projects. They used to be separate repositories; since 2026-11-08 they live here as directories (the old repositories remain online as read-only archives, and their commit history was carried over into this repository's history).
+
+| Directory | What it is |
+|---|---|
+| **[`Swing/`](Swing)** | Day-K trend-following strategy — **complete documentation** (logic, params, 20-year × 37-stock backtest, honest caveats, falsified alternatives) |
+| **[`gridtrader/`](gridtrader)** | Grid-trading strategy development & backtesting tool (Python / backtrader) |
+| **[`Intraday/`](Intraday)** | Active intraday research (order-flow features, minute-level ML signals, walk-forward validation) |
+
+Each directory carries its own `AGENTS.md` with the hard rules specific to it; version and change log are those of this repository (`VERSION` / `CHANGELOG.md` at the root).
 
 ## Part of the xhqing Agent Team
 

@@ -8,6 +8,18 @@
 
 ## [Unreleased]
 
+### 变更（Intraday / Swing / gridtrader 三个子项目仓库并入本仓库成为三个目录，2026-11-08）
+
+- **为什么改**：用户 2026-11-08 决定「这三个子项目退化为 Mark 仓库下面的三个目录」。三个研究项目各自占一个仓库，导致每次改动都要在三个仓库各走一遍 PR + CI + 发版流程，而它们其实是同一个研究方向的三条腿（日内 / 日 K 趋势 / 网格）；同时团队正在把「Agent 项目 ↔ 子项目」的关系改为完全独立，减少仓库数量是同一方向上的第一步。
+- **改了什么**：
+  - 三个仓库用 `git subtree add` 并入本仓库的 `Intraday/`、`Swing/`、`gridtrader/` 三个前缀，**原仓库的提交历史完整保留**在本仓库 git 历史里（三个 GitHub 远端仓库保留为只读存档）。
+  - 被忽略的数据与运行时产物（`Intraday/intraday/{data_cache,models,output}/`、`Swing/engine/{data_cache,output}/`、`Swing/rotation/output/`、`Intraday/DATA-LOCATION.local.md`）一并搬到新位置，保持原来的忽略口径；`__pycache__` 丢弃（可即时重生）。
+  - 删除三个目录里已无意义的仓库级文件：`AGENTS.md` 软链接（改为各目录自己的实体 `AGENTS.md`，承载原 `.pi/APPEND_SYSTEM.md` 的全部硬约束）、`.pi/`、`.github/`（GitHub 不读子目录 workflow）、`LICENSE.md`（根许可证覆盖全仓库）、`VERSION`（版本权威收敛到仓库根）、`.commit-cache.md`。
+  - 三份 `CHANGELOG.md` 添加「历史记录、自并入之日起定格」的说明并保留全部历史内容；新改动一律记本文件。
+  - 仓库根 `AGENTS.md` 的「子项目清单」整节重写为「仓库结构：三个研究目录」＋「Leader / Worker 分工」，删掉已废止的「身份层软链接 + 能力层目录引用」机制描述与已移出名册的 NewsScoreStudy 条目；`README.md` / `README_cn.md` 的「Repository Landscape / 仓库版图」同步改为目录表，两处指向 `xhqing/Swing` 的链接改为仓库内相对路径。
+  - 新增 `.pi/APPEND_SYSTEM.md`：把「动某个目录前先读它自己的 `AGENTS.md`」写成会话启动即加载的规则，并收拢三条跨目录底线（研究不接实盘 / 数据不入库 / 版本与记录单一口径）。
+- **回归检查**：并入前三个仓库均与远端同步、工作区干净（已逐个核实）；`validate.py` 本地预检 126 个被跟踪文件全部通过（README 相对链接、Python 语法、敏感文件、大文件）。原 `quant` skill 未移动（实体在 `.claude/skills/quant/`）。
+
 ### 变更（项目规则文件本体统一改为 `AGENTS.md`，`CLAUDE.md` 弃用，2026-11-05）
 
 - **为什么改**：用户 2026-11-05 立规「所有注册表项目与全局的规则文件本体统一用 `AGENTS.md`，`CLAUDE.md` 弃用」。pi 的上下文文件候选顺序是 `AGENTS.override.md` > `AGENTS.md` > `CLAUDE.md`（同一目录只加载第一个存在的），本体放在 `AGENTS.md` 后 `CLAUDE.md` 根本不参与加载——两份并存只会形成双份内容、随时漂移。
