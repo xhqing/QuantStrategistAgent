@@ -15,7 +15,7 @@
 
 **Mark** 是专职**量化策略开发**的拟人化 AI agent（港股 / 美股），基于 [Claude Code](https://claude.com/claude-code) 构建。它把交易思路写成可回测的确定性代码，用多年历史数据回测标定可信度。量化策略**独立开发**，与任何交易执行项目无依赖、无交付关系。
 
-> 本仓库是 Mark 项目的**主仓库**（agent 项目）：agent 运行纪律（AGENTS.md）、方法学与公开组件。进行中的日内策略研究放在子项目 [Intraday](https://github.com/xhqing/Intraday) 仓库（见下方[仓库版图](#仓库版图)）。
+> 本仓库是 Mark 项目的**主仓库**（agent 项目）：agent 运行纪律（AGENTS.md）、方法学与公开组件。进行中的日内策略研究放在本仓库的 `Intraday/` 目录（见下方[仓库版图](#仓库版图)）。
 
 ---
 
@@ -26,7 +26,7 @@ edge 来自可复现的数学严谨：
 - **输出全量化**：每个字段要么是数值、要么是有限枚举——禁止「动能减弱」这类定性文字。这是量化区别于主观交易的本质。
 - **回测验证的可信度**：策略不给自己打分；它的信心来自历史实测的胜率 / avg_R 与样本数。
 - **纯函数、无前视**：同数据 + 同参数 → 永远同结果。未来数据不泄漏进任何决策。
-- **诚实的负结果**：已证伪的想法留档记录、不掩埋——见各策略文档的「已证伪方案」节（如 [Swing 的 STRATEGY.md](https://github.com/xhqing/Swing/blob/main/swing/STRATEGY.md)）。
+- **诚实的负结果**：已证伪的想法留档记录、不掩埋——见各策略文档的「已证伪方案」节（如 [`Swing/trend/STRATEGY.md`](Swing/trend/STRATEGY.md)）。
 - **walk-forward 跨年验证**：样本内说明不了什么；样本外零衰减才是及格线。
 
 <p align="center">
@@ -35,11 +35,15 @@ edge 来自可复现的数学严谨：
 
 ## 仓库版图
 
-| 仓库 | 可见性 | 是什么 |
-|---|---|---|
-| **[Swing](https://github.com/xhqing/Swing)** | 公开 | 子项目：日 K 趋势跟随策略，**文档完整**（逻辑、参数、20 年 × 37 只回测、诚实标注局限、已证伪方案清单） |
-| **[gridtrader](https://github.com/xhqing/gridtrader)** | 公开 | 子项目：网格交易策略开发与回测工具（Python / backtrader） |
-| [Intraday](https://github.com/xhqing/Intraday) | 公开 | 子项目：进行中的日内策略研究（订单流、分钟级 ML 信号、walk-forward 验证）。 |
+一个仓库同时装 agent 项目**和**三个研究项目。它们原先是三个独立仓库，2026-11-08 起并入本仓库、成为三个目录（原仓库保留在网上作只读存档，原有提交历史已随并入带进本仓库的历史）。
+
+| 目录 | 是什么 |
+|---|---|
+| **[`Swing/`](Swing)** | 日 K 趋势跟随策略，**文档完整**（逻辑、参数、20 年 × 37 只回测、诚实标注局限、已证伪方案清单） |
+| **[`gridtrader/`](gridtrader)** | 网格交易策略开发与回测工具（Python / backtrader） |
+| **[`Intraday/`](Intraday)** | 进行中的日内策略研究（订单流、分钟级 ML 信号、walk-forward 验证） |
+
+每个目录各带一份 `AGENTS.md`，写明本目录的硬约束；版本号与改动记录以本仓库根的 `VERSION` / `CHANGELOG.md` 为准。
 
 ## xhqing Agent 团队成员
 
