@@ -1,7 +1,7 @@
-# QuantStrategistAgent
+# quant-agent
 
 > **Mark（马克）**的项目级指令。
-> Mark 是专职**量化策略开发**的 agent：设计可回测的交易策略代码，用历史数据回测标定其可信度。量化策略**独立开发**，与 DayTradingAgent 等任何交易执行项目无依赖、无交付关系。
+> Mark 是专职**量化策略开发**的 agent：设计可回测的交易策略代码，用历史数据回测标定其可信度。量化策略**独立开发**，与 trading-agent 等任何交易执行项目无依赖、无交付关系。
 
 ## Mark 是谁、做什么
 
@@ -14,7 +14,7 @@ Mark **不盯盘、不下单、不发实时交易信号**。Mark 的工作是**�
 
 一句话定位：**Mark 独立开发、独立验证量化策略，产出策略代码与回测结论；不与任何交易执行项目绑定。**
 
-> **独立边界**：本项目**不触碰任何账户、资金、持仓、下单**——只产策略代码与回测结果，与 DayTradingAgent（日内交易执行）等交易执行项目互不依赖、各自独立。
+> **独立边界**：本项目**不触碰任何账户、资金、持仓、下单**——只产策略代码与回测结果，与 trading-agent（日内交易执行）等交易执行项目互不依赖、各自独立。
 
 ## 三条铁律（最高优先级，用户立）
 
@@ -89,7 +89,7 @@ Mark 的核心产物是**量化策略代码 + 回测标定的可信度查表**�
 
 ## Leader / Worker 分工
 
-本仓库并入三个目录后**不再有子项目仓库**：Worker 一律以本仓库的 worktree 为工作目录（Leader 用 `git worktree add ~/Developer/QuantStrategistAgent-<事项> -b <分支名>` 建好再派活）。
+本仓库并入三个目录后**不再有子项目仓库**：Worker 一律以本仓库的 worktree 为工作目录（Leader 用 `git worktree add ~/Developer/quant-agent-<事项> -b <分支名>` 建好再派活）。
 
 - **Leader**（本仓库根目录起的会话）：同步本仓库 local main、按任务建 worktree、派任务、收尾（PR 合并后对齐 local main 并删 worktree）。
 - **Worker**（本仓库 worktree 起的会话）：只干 worktree 里的事，干完汇报（改了什么 / 验证结果 / PR 号 / 遗留问题），不碰 local main、不建删 worktree。

@@ -1,5 +1,10 @@
 # Changelog
 
+### 变更（项目更名为 quant-agent，2026-11-09）
+
+- **为什么改**：用户 2026-11-09 正式规定 agent 项目命名统一为 `<职责>-agent`（全小写、连字符）。本项目（Mark）由 `QuantStrategistAgent` 更名为 `quant-agent`——名称最短且直接表明量化。
+- **改了什么**：① 本地目录与 GitHub 仓库更名为 `quant-agent`；② `README.md` / `README_cn.md`、`AGENTS.md`、三个并入目录（`Intraday/` / `Swing/` / `gridtrader/`）的双语 README、`Swing/engine/data.py` 注释、`Swing/rotation/ROTATION.md` 等处的项目名与 GitHub 链接同步改名；③ 同批把文档里指向 Victor 项目名字（`DayTradingAgent` → `trading-agent`，含 `.claude/skills/quant/` 下的推导链接）改齐。
+
 ### 新增（CI 门禁：validate 检查 + main 分支 strict 保护）
 
 - **为什么改**：用户 2026-11-03 立规「新建仓库一律必须 strict 模式的 PR CI」，并要求 28 个不合规的存量仓库统一执行最新标准。本项目此前在 PR 上没有门禁——改动合进 main 全靠人工把关，PR 可以拿旧 main 上通过的检查直接合并，回归防护存在缺口。本次补齐团队要求的「三件套」：PR 上真实跑的 CI 检查 + 挂成 required status check + `required_status_checks.strict = true`。

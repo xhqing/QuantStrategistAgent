@@ -57,4 +57,4 @@ Strategy research for educational purposes. Nothing here is investment advice; b
 
 - **Copyright** (c) 2026 xhqing and contributors. Licensed under the [MIT License](LICENSE.md).
 - **Attribution**: If you reference or build upon this work, please keep the copyright notice and credit the source repository.
-- **Citation**: <https://github.com/xhqing/QuantStrategistAgent>
+- **Citation**: <https://github.com/xhqing/quant-agent>
