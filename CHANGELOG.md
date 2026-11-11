@@ -1,5 +1,11 @@
 # Changelog
 
+### 变更（同步子项目更名：TeamToolkit → agents-infra，2026-11-11）
+
+- **为什么改**：用户 2026-11-11 决定把 Kit 名下的子项目 TeamToolkit 更名为 **agents-infra**（GitHub 仓库 `xhqing/TeamToolkit` → `xhqing/agents-infra`，全局 `~/.pi/agent` 里的引用与发布脚本目录同批改完）。本仓库 `AGENTS.md` 里还留着一处指向旧名的引用。
+- **改了什么**：`AGENTS.md` 第 65 行（「工作规则」节末尾）那句「权威源见 TeamToolkit 仓库的 `pi/agent/AGENTS.md`」改为「权威源见 agents-infra 仓库的 `pi/agent/AGENTS.md`」；全仓库复查无其它 `TeamToolkit` / `team-toolkit` 残留引用。
+- **回归风险**：无——纯文档改名引用，不涉及任何代码、数据或回测口径。
+
 ### 变更（项目更名为 quant-agent，2026-11-09）
 
 - **为什么改**：用户 2026-11-09 正式规定 agent 项目命名统一为 `<职责>-agent`（全小写、连字符）。本项目（Mark）由 `QuantStrategistAgent` 更名为 `quant-agent`——名称最短且直接表明量化。
