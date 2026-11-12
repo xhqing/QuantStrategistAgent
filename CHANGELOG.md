@@ -19,6 +19,12 @@
 
 ## [Unreleased]
 
+### 更正（Leader / Worker 定义：Agent 项目任何 worktree = Leader，2026-11-12）
+
+- **为什么改**：用户 2026-11-12 重新定义 Leader / Worker——Leader / Worker 是 **Agent 项目 vs 它负责的子项目** 的概念，不是“主工作区 vs worktree”。Agent 项目任何分支 / worktree 根 = Leader；子项目任何分支 / worktree 根 = Worker。
+- **改了什么**：`.pi/APPEND_SYSTEM.md` 与 `.dsh/APPEND_SYSTEM.md` 的 Leader / Worker 段同步改为“本仓库任何 worktree 都是 Leader；本项目没有独立子项目仓库，不产生 Worker”。
+- **回归风险**：无——纯规则表述修正，不涉及代码、数据或回测口径。
+
 ### 变更（双团队形态：pi-team + dsh-team，2026-11-12）
 
 - **为什么改**：用户 2026-11-12 决定把 quant-agent 改造成同一个 Agent 项目同时服务 pi-team（开源）与 dsh-team（闭源）的形态；同一个人、一套版本 / CHANGELOG，两套运行时规则分开。
