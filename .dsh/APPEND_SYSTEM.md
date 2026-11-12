@@ -19,9 +19,9 @@
 ## 3. Leader / Worker（DSH）
 
 - 本仓库是 **Agent 项目**：任何分支 / worktree 的根目录作为 cwd 的 DSH 会话，都是 **Leader**。
-- 本仓库没有独立子项目仓库，所以不产生 Worker 会话；任务 worktree 里的会话仍是 Leader。
+- 本仓库有一个私有子项目 **NewsScoreStudy**（private；DSH-only，`.dsh` + 实体 `AGENTS.md`）。本仓库任何 worktree = Leader；NewsScoreStudy 的 worktree = Worker。
 - Leader 用 DSH shell / tmux 建 worktree、派任务、收尾；worktree 里不切 main、不 commit main。
-- 如果闭源工作放在独立子项目仓库，那个子项目 worktree 的 DSH 会话才是 Worker。
+- 本仓库自己的任务 worktree 仍是 Leader；只有 NewsScoreStudy 的 worktree 才是 Worker。
 
 ## 4. 交付与记录
 
