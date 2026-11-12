@@ -19,6 +19,18 @@
 
 ## [Unreleased]
 
+### 变更（双团队形态：pi-team + dsh-team，2026-11-12）
+
+- **为什么改**：用户 2026-11-12 决定把 quant-agent 改造成同一个 Agent 项目同时服务 pi-team（开源）与 dsh-team（闭源）的形态；同一个人、一套版本 / CHANGELOG，两套运行时规则分开。
+- **改了什么**：
+  - 根 `AGENTS.md` 只保留共享身份、量化铁律、产物契约、设计原则、工作流、数据约束与仓库结构；新增「运行时」分支：pi 读 `.pi/APPEND_SYSTEM.md`，DSH 读 `.dsh/APPEND_SYSTEM.md`。
+  - `.pi/APPEND_SYSTEM.md` 收拢 pi-team 专属：pi 工作流、Leader / Worker、`agent_call`、嵌套规则读取、`.commit-cache.md`。
+  - 新增 `.dsh/APPEND_SYSTEM.md`：dsh-team 专属，闭源策略 / 数据边界、DSH Worker、无 pi 工具。
+  - quant skill 从 `.claude/skills/quant/` 迁到 `.agents/skills/quant/`（pi、DSH 共读）；删除 `.claude/` 与 `.pi/skills` 软链接。
+  - 三个研究目录 `AGENTS.md` 与 Intraday 双语 README 的 skill 路径同步改为 `.agents/skills/quant/`；不再把 `~/.pi/agent` 当作共享规则源。
+- **回归风险**：低——纯规则 / 目录形态调整，不涉及策略代码、回测口径或数据；skill 文件内容未改，仅路径迁移。
+
+
 ### 更正（并入历史表述：本仓库是单个提交接手，原历史在存档仓库里，2026-11-08）
 
 - **为什么改**：上一版把并入说成「原仓库的提交历史完整保留在本仓库 git 历史里」，与事实不符——并入用的是 `git subtree add`（本地确实引入了完整历史），但 PR 走的是仓库规定的 **squash 合并**，历史在合进 main 时被压成一个提交。继续这么写等于给后来者一个错误前提（以为 `git log -- Intraday/` 能翻到原仓库的逐条提交）。

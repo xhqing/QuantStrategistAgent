@@ -65,7 +65,7 @@ Intraday/
 | **长桥 CLI** | 十几年日 K（分页，每页 1000 根） | 日 K 交叉验证 |
 | 富途资金流 / 盘口快照 / 换手率 | 仅当日、无历史 | 不进回测 |
 
-完整调研（含付费渠道）见主仓库 quant skill：[`data-sources.md`](https://github.com/xhqing/quant-agent/blob/main/.claude/skills/quant/data-sources.md)。
+完整调研（含付费渠道）见主仓库 quant skill：[`data-sources.md`](https://github.com/xhqing/quant-agent/blob/main/.agents/skills/quant/data-sources.md)。
 
 ## 前置条件
 
