@@ -87,6 +87,8 @@ Mark 的核心产物是**量化策略代码 + 回测标定的可信度查表**�
 - **pi**：只自动加载 cwd 与祖先目录的 `AGENTS.md`，不会加载嵌套目录的规则，必须显式去读。
 - **DSH**：会从项目根到 cwd 逐级加载 `AGENTS.md`；但为两边一致，动某个目录前仍显式读它。
 
+**私有子项目（独立仓库）**：**NewsScoreStudy**（`github.com/xhqing/NewsScoreStudy`，private，Mark 负责）——只登记名与链接，不介绍内容。它是 dsh-team 项目：没有 `.pi`，用 `.dsh` + 实体 `AGENTS.md`；它的任何 worktree = Worker，本仓库任何 worktree = Leader。
+
 并入时的统一约定：
 
 - **版本号**：仓库根 `VERSION` 是唯一权威，三个目录不再各自持有 `VERSION`（并入时已删除。原值：Intraday 0.1.2、Swing 0.1.1、gridtrader 0.1.2；本仓库根当时为 0.1.1）。

@@ -19,6 +19,12 @@
 
 ## [Unreleased]
 
+### 新增（私有子项目 NewsScoreStudy 重新登记，2026-11-12）
+
+- **为什么改**：用户 2026-11-12 决定把 **NewsScoreStudy** 重新登记为 quant-agent 的 private 子项目；xhqing 名册只列项目名与链接、不介绍内容。
+- **改了什么**：① 根 `AGENTS.md` 增「私有子项目」段（只列名与链接）；② `.pi/APPEND_SYSTEM.md` 与 `.dsh/APPEND_SYSTEM.md` 的 Leader / Worker 段改为「本仓库任何 worktree = Leader；NewsScoreStudy 的 worktree = Worker」；③ NewsScoreStudy 仓库本身改为 DSH 形态（`.dsh` + 实体 `AGENTS.md`，删除 `.pi`）。
+- **回归风险**：无——只改规则归属，不涉及策略代码、数据或回测口径。
+
 ### 更正（Leader / Worker 定义：Agent 项目任何 worktree = Leader，2026-11-12）
 
 - **为什么改**：用户 2026-11-12 重新定义 Leader / Worker——Leader / Worker 是 **Agent 项目 vs 它负责的子项目** 的概念，不是“主工作区 vs worktree”。Agent 项目任何分支 / worktree 根 = Leader；子项目任何分支 / worktree 根 = Worker。
