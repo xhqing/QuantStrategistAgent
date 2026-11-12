@@ -18,11 +18,11 @@
 
 ## 3. Leader / Worker
 
-- **Leader**：本仓库根目录起的 pi 会话；同步 local main、按任务建 worktree、派任务、收尾。
-  - worktree：`git -C ~/Developer/quant-agent worktree add ~/Developer/quant-agent-<事项> -b <分支名>`。
-- **Worker**：worktree 起的 pi 会话；只干 worktree 里的事，不碰 local main、不建删 worktree；干完向 Leader 汇报（改了什么 / 验证结果 / PR 号 / 遗留问题）。
-- 用 pi 的 `agent_call` / `agent_wake` 派活；Worker 命名 `Mark-<事项>`。
-- 详见全局 `~/.pi/agent/AGENTS.md`「会话间协作 · Leader / Worker 分工」。
+- 本仓库是 **Agent 项目**：任何分支 / worktree 的根目录作为 cwd 的 pi 会话，都是 **Leader**。
+- 本仓库没有独立子项目仓库（`Intraday/` / `Swing/` / `gridtrader/` 是同一仓库的三个目录），所以**不产生 Worker 会话**；任务 worktree 里的会话仍是 Leader，按 Leader 规则操作。
+- Leader 的职责：同步 local main、按任务建 worktree、派任务、收尾；worktree 里不切 main、不 commit main。
+- 用 pi 的 `agent_call` / `agent_wake` 派活；若要交给某个子项目 Worker，那个子项目必须是独立仓库并已登记。
+- 详见全局 `~/.pi/agent/AGENTS.md`「Leader / Worker 的定义」。
 
 ## 4. 其他 pi 约定
 
