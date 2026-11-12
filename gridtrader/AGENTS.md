@@ -32,4 +32,4 @@
 
 ## 更多
 
-`README_cn.md` / `README.md`（用法与工作原理）；通用工作规则见仓库根 `AGENTS.md` 与全局 `~/.pi/agent/AGENTS.md`。
+`README_cn.md` / `README.md`（用法与工作原理）；通用工作规则见仓库根 `AGENTS.md` 与各运行时的全局规则。

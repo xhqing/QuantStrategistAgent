@@ -33,4 +33,4 @@
 
 ## 更多
 
-`trend/STRATEGY.md`（主策略全量）、`rotation/ROTATION.md`（轮动全量）、`engine/schema.md`（输出契约与回测设计）、`engine/data-sources.md`（数据源）；通用工作规则见仓库根 `AGENTS.md` 与全局 `~/.pi/agent/AGENTS.md`。
+`trend/STRATEGY.md`（主策略全量）、`rotation/ROTATION.md`（轮动全量）、`engine/schema.md`（输出契约与回测设计）、`engine/data-sources.md`（数据源）；通用工作规则见仓库根 `AGENTS.md` 与各运行时的全局规则。

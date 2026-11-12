@@ -36,4 +36,4 @@
 
 ## 更多
 
-研究细节见 `intraday/CONCLUSIONS.md` 与 `intraday/STRATEGY.md`；数据源调研见仓库根 `.pi/skills/quant/` 的 `data-sources.md`；通用工作规则见仓库根 `AGENTS.md` 与全局 `~/.pi/agent/AGENTS.md`。
+研究细节见 `intraday/CONCLUSIONS.md` 与 `intraday/STRATEGY.md`；数据源调研见仓库根 `.agents/skills/quant/` 的 `data-sources.md`；通用工作规则见仓库根 `AGENTS.md` 与各运行时的全局规则。

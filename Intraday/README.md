@@ -65,7 +65,7 @@ Intraday/
 | **Longbridge CLI** | 10+ yr day K (paginated, 1000/page) | Day-K cross-validation |
 | Futu capital flow / order-book snapshot / turnover | Current day only, no history | Excluded from backtests |
 
-Full survey (incl. paid channels) lives in the quant skill of the main repo: [`data-sources.md`](https://github.com/xhqing/quant-agent/blob/main/.claude/skills/quant/data-sources.md).
+Full survey (incl. paid channels) lives in the quant skill of the main repo: [`data-sources.md`](https://github.com/xhqing/quant-agent/blob/main/.agents/skills/quant/data-sources.md).
 
 ## Prerequisites
 

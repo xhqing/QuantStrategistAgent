@@ -1,21 +1,30 @@
-# Mark 仓库 · 项目追加规则
+# pi-team 项目规则（quant-agent）
 
-本文件由 pi 在 cwd 位于本仓库（或其 worktree）时自动追加进系统提示。**只写本仓库特有的约定**；团队通用规则在全局 `~/.pi/agent/AGENTS.md`，此处不重述。
+> **Runtime: pi-team。** 本文件只适用于 pi；如果你在 DSH 下运行，忽略本文件，见 `.dsh/APPEND_SYSTEM.md`。
 
-## 三个研究目录，各有各的硬约束
+本文件由 pi 在 cwd 位于本仓库（或其 worktree）时自动追加进系统提示。只写本仓库特有的 pi 约定；团队通用规则在全局 `~/.pi/agent/AGENTS.md`。
 
-本仓库根下有三个研究目录（2026-11-08 由三个独立仓库并入）：`Intraday/`、`Swing/`、`gridtrader/`。
+## 1. 运行时与规则
 
-**动某个目录之前，先读它自己的 `AGENTS.md`**（`Intraday/AGENTS.md` / `Swing/AGENTS.md` / `gridtrader/AGENTS.md`）。三份规则差异很大——数据源与 `data_cache` 口径、label 用成交价还是委托价、参数能不能"顺手优化"、依赖用 Pipenv 还是系统 Python——写错一边就是错的回测结论。嵌套的 `AGENTS.md` 不会被自动加载，只能靠显式去读。
+- 本仓库是开源项目，归 pi-team；用 pi 的 `/add`、`/commit`、`/bump`、`/release` 流程。
+- 版本以仓库根 `VERSION` 为唯一权威；改动记仓库根 `CHANGELOG.md`。
+- 通用工作规范（verify-before-report / file-operation-priority / tmp-dir-for-artifacts）由全局规则加载，不在这里重述。
 
-## 三条跨目录的共同底线
+## 2. 三个研究目录
 
-1. **研究与实盘完全隔离**：不下单、不接证券账户、不发实时信号；本仓库只产出可回测的确定性代码与结论。
-2. **数据与运行时产物不入库**：`Intraday/intraday/{data_cache,output,models,tick}/`、`Swing/engine/{data_cache,output}/`、`Swing/rotation/output/`、各目录 `tmp/`，需要时重新生成。tick / 订单簿数据在本机之外（macmini），要跑先说明、用 `macmini_run`。
-3. **版本与记录单一口径**：仓库根 `VERSION` 是唯一版本权威；所有改动记仓库根 `CHANGELOG.md`。三个目录各自的 `CHANGELOG.md` 已定格为历史记录，不再更新。
+- 动 `Intraday/` / `Swing/` / `gridtrader/` 前，显式读各自的 `AGENTS.md`。
+- pi 只自动加载 cwd 与祖先目录的 `AGENTS.md`，**不会**自动加载嵌套目录的规则；所以必须显式去读。
+- 数据与运行时产物不入库；tick / 订单簿数据在 macmini，需要时用 `macmini_run` 在那边跑。
 
-## 入口
+## 3. Leader / Worker
 
-- 项目本体与协作规则：仓库根 `AGENTS.md`
-- quant 策略技能：`.claude/skills/quant/`（`.pi/skills` 指向它）
-- 研究结论层：`Intraday/intraday/CONCLUSIONS.md`、`Swing/trend/STRATEGY.md`、`Swing/rotation/ROTATION.md`
+- **Leader**：本仓库根目录起的 pi 会话；同步 local main、按任务建 worktree、派任务、收尾。
+  - worktree：`git -C ~/Developer/quant-agent worktree add ~/Developer/quant-agent-<事项> -b <分支名>`。
+- **Worker**：worktree 起的 pi 会话；只干 worktree 里的事，不碰 local main、不建删 worktree；干完向 Leader 汇报（改了什么 / 验证结果 / PR 号 / 遗留问题）。
+- 用 pi 的 `agent_call` / `agent_wake` 派活；Worker 命名 `Mark-<事项>`。
+- 详见全局 `~/.pi/agent/AGENTS.md`「会话间协作 · Leader / Worker 分工」。
+
+## 4. 其他 pi 约定
+
+- `.commit-cache.md` 是 pi 的提交缓存，按 pi 的 commit skill 维护。
+- 不要混用 `.dsh/APPEND_SYSTEM.md` 的 dsh-team 规则；两套运行时规则各管各的。

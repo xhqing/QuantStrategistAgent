@@ -24,11 +24,11 @@ Mark **不盯盘、不下单、不发实时交易信号**。Mark 的工作是**�
 
 > 判定依据不许写文字，必须转成一组数值 `features`（如均线值、斜率、量比、ATR）。定性结论（方向 / 状态）只作为这些数值的离散枚举结果输出。
 
-完整 schema 与回测设计见 `.claude/skills/quant/schema.md`。
+完整 schema 与回测设计见 `.agents/skills/quant/schema.md`。
 
 ## 产物契约
 
-Mark 的核心产物是**量化策略代码 + 回测标定的可信度查表**。输出契约分两层（详见 `.claude/skills/quant/schema.md`）：
+Mark 的核心产物是**量化策略代码 + 回测标定的可信度查表**。输出契约分两层（详见 `.agents/skills/quant/schema.md`）：
 
 - **战略层 schema**（日 K，今日地图）：`direction` / `regime` / `levels` / `entry_condition` / `entry_params` / `features` / `category` / `confidence`
 - **战术层 schema**（分钟 K，盘中扳机）：`direction` / `action` / `entry_price` / `trigger` / `trigger_params` / `levels` / `features` / `category` / `confidence`
@@ -43,7 +43,7 @@ Mark 的核心产物是**量化策略代码 + 回测标定的可信度查表**�
 4. **策略是纯函数**：无随机、无全局状态、无副作用、无未来函数 → 同 `bars` + 同 `params` 永远同输出。
 5. **优化目标 = `avg_R`**（平均风险倍数盈亏），不是胜率、不是总收益率。高胜率低赔率是陷阱。
 
-设计原则与目录结构详见 `.claude/skills/quant/README.md`。
+设计原则与目录结构详见 `.agents/skills/quant/README.md`。
 
 ## 工作流（加 / 改一个策略）
 
@@ -58,11 +58,17 @@ Mark 的核心产物是**量化策略代码 + 回测标定的可信度查表**�
 - **长桥日 K**：单次上限 1000 根，分页拼接（每页约 4 年）可拉十几年；港股美股均支持。符号 `代码.市场` 后缀（`02800.HK` / `SPY.US`）。
 - **资金流 / 盘口 / 换手率**：无历史，**不进策略**。
 
-数据源调研（含付费第三方渠道、踩坑备忘）见 `.claude/skills/quant/data-sources.md`。
+数据源调研（含付费第三方渠道、踩坑备忘）见 `.agents/skills/quant/data-sources.md`。
+
+## 运行时
+
+- **pi**：项目硬规则见 `.pi/APPEND_SYSTEM.md`（pi 自动加载）。
+- **DSH**：项目硬规则见 `.dsh/APPEND_SYSTEM.md`（DSH 插件注入）。
+- 不要应用另一个运行时的规则；共享身份与研究规则以本文件为准。
 
 ## 工作规则
 
-通用工作规范三件套（verify-before-report / file-operation-priority / tmp-dir-for-artifacts）已全文并入全局 `~/.pi/agent/AGENTS.md`『工作规则』节、随全局 AGENTS.md 自动加载，项目不再维护副本。开源 clone 者请把这三条规则自行并入自己的全局指令文件（权威源见 agents-infra 仓库的 `pi/agent/AGENTS.md`）。
+通用工作规范（verify-before-report / file-operation-priority / tmp-dir-for-artifacts）由各运行时的全局规则加载；本仓库不维护副本。
 
 > 事实性 / 数值性结论先验证再陈述（实体归属、算术、日历、API 字段、费率），禁止把推测当事实——这条是量化工作的底线：策略代码里的每一个数值都必须有据可查、可复现。
 
@@ -76,7 +82,10 @@ Mark 的核心产物是**量化策略代码 + 回测标定的可信度查表**�
 | `Swing/` | 日 K 趋势跟随策略工具集（美股大盘股，完整文档 + 回测验证 + 可信度标定） | `Swing/AGENTS.md` |
 | `gridtrader/` | 网格交易策略开发及回测工具（Python / backtrader / Pipenv） | `gridtrader/AGENTS.md` |
 
-**动某个目录之前先读它自己的 `AGENTS.md`**：三个目录的硬约束各不相同（数据源与 data_cache 口径、label 用哪个价、参数调优纪律、依赖管理方式），规则写在各自那份文件里。嵌套的 `AGENTS.md` **不会被 pi 自动加载**（pi 只加载 cwd 与祖先目录的规则文件），所以这里必须显式指路。
+**动某个目录之前先读它自己的 `AGENTS.md`**：三个目录的硬约束各不相同（数据源与 data_cache 口径、label 用哪个价、参数调优纪律、依赖管理方式），规则写在各自那份文件里。
+
+- **pi**：只自动加载 cwd 与祖先目录的 `AGENTS.md`，不会加载嵌套目录的规则，必须显式去读。
+- **DSH**：会从项目根到 cwd 逐级加载 `AGENTS.md`；但为两边一致，动某个目录前仍显式读它。
 
 并入时的统一约定：
 
@@ -84,40 +93,5 @@ Mark 的核心产物是**量化策略代码 + 回测标定的可信度查表**�
 - **改动记录**：一律记仓库根 `CHANGELOG.md`；三个目录各自的 `CHANGELOG.md` 已定格为历史记录、不再更新。
 - **许可证**：仓库根 `LICENSE.md` 覆盖全部目录，子目录不再各带一份。
 - **CI**：只有一个仓库，走仓库根 `.github/workflows/`；原子仓库的 workflow 已随并入删除（GitHub 不会读子目录里的 workflow）。
-- **quant skill**：只有一份，实体在 `.claude/skills/quant/`（`.pi/skills` 是指向它的软链接），不向子目录复制。
+- **quant skill**：只有一份，实体在 `.agents/skills/quant/`（pi、DSH 都从 `.agents/skills` 读取，不再用 `.pi/skills` 软链接），不向子目录复制。
 - **数据与产物**：`Intraday/intraday/{data_cache,output,models}/`、`Swing/engine/{data_cache,output}/`、`Swing/rotation/output/` 等一仍其旧地忽略，不入库。
-
-## Leader / Worker 分工
-
-本仓库并入三个目录后**不再有子项目仓库**：Worker 一律以本仓库的 worktree 为工作目录（Leader 用 `git worktree add ~/Developer/quant-agent-<事项> -b <分支名>` 建好再派活）。
-
-- **Leader**（本仓库根目录起的会话）：同步本仓库 local main、按任务建 worktree、派任务、收尾（PR 合并后对齐 local main 并删 worktree）。
-- **Worker**（本仓库 worktree 起的会话）：只干 worktree 里的事，干完汇报（改了什么 / 验证结果 / PR 号 / 遗留问题），不碰 local main、不建删 worktree。
-
-详见全局 `~/.pi/agent/AGENTS.md`「会话间协作 · Leader / Worker 分工」。
-
-## commit skill 检测缓存
-
-<!-- commit-skill: readme-standard = ok -->
-- README 中英双语 + LOGO + 徽章 + 版权署名：已就绪（2026-08-03 确认）
-
-<!-- commit-skill: license = ok -->
-- LICENSE.md：已存在（2026-08-03 确认）
-
-<!-- commit-skill: github-about = ok -->
-- GitHub About：已配置（中英双语 description + topics，2026-08-03）
-
-<!-- commit-skill: agent-persona = ok -->
-- Agent 拟人名：已写入 README（Mark，2026-10-17）
-
-<!-- commit-skill: attribution-name = ok -->
-- 版权人/署名引用名字：已归一为 All Contributors（2026-08-03 确认）
-
-<!-- commit-skill: readme-link-text = ok -->
-- 英文版 README 跳转中文版链接文字：已统一为「简体中文」（2026-08-03 确认）
-
-<!-- commit-skill: repo-sponsors = ok -->
-- 仓库 Sponsors 按钮：已就绪（xhqing/.github 全局默认 FUNDING.yml，2026-08-03 确认）
-
-<!-- commit-skill: readme-no-stars-badge = ok -->
-- README 徽章：已不含 GitHub Stars 数量徽章（2026-08-03 确认）
